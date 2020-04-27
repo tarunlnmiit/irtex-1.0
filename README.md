@@ -56,6 +56,7 @@
   
   * In order to initialise the frontend Angular app the following commands needs to be used after execution of the above commands
       ```
+      git checkout client
       cd ../irtex-client
       npm install 
       ng serve -o
