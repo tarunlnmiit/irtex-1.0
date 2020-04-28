@@ -1,6 +1,6 @@
 # IRTEX-1.0
 
-## This is the working Scientific project about an Image Retrival Engine
+## This is the working Scientific project about an Image Retrieval Engine
 
 > The project currently consists of 5 branches:
   1. master - production code ready
