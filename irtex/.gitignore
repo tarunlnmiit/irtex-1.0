@@ -1,5 +1,1 @@
 irtex-client/
-*.pyc
-/dataset/cifar10/
-/dataset/.ipynb_checkpoints/
-/dataset/edge detection.ipynb

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 # System Packages
 import os
 # 3rd party packages
+import django_heroku
 # local packages
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -28,7 +29,7 @@ SECRET_KEY = 'oze5h+s*m*325a8x8*=54u#v^v7(hl+@x1)pl@m_cs4gz-svz2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['irtex-engine.herokuapp.com']
 
 # CORS_ORIGIN_WHITELIST = [
 #     'http://localhost:8000',
@@ -141,3 +142,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+django_heroku.settings(locals())
