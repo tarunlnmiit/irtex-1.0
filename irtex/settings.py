@@ -94,7 +94,7 @@ WSGI_APPLICATION = 'irtex.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'irtex_test',
+        'NAME': 'heroku_44bw2hgk',
         'USER': 'root',
         'PASSWORD': 'kewPyz-2fiwma-goxhoc',
         'HOST': 'mongodb://root:kewPyz-2fiwma-goxhoc@ds233571.mlab.com:33571/heroku_44bw2hgk',
