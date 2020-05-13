@@ -97,7 +97,7 @@ DATABASES = {
         'NAME': 'irtex_test',
         'USER': 'root',
         'PASSWORD': 'kewPyz-2fiwma-goxhoc',
-        'HOST': 'mongodb://root:kewPyz-2fiwma-goxhoc@ds233571.mlab.com/heroku_44bw2hgk',
+        'HOST': 'mongodb://root:kewPyz-2fiwma-goxhoc@ds233571.mlab.com:33571/heroku_44bw2hgk',
         'PORT': '33571'
     }
 }
