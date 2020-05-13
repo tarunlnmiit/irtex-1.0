@@ -96,8 +96,8 @@ DATABASES = {
         'ENGINE': 'djongo',
         'NAME': 'irtex_test',
         'USER': 'root',
-        'PASSWORD': 'Fajcon-witgob-2nizki',
-        'HOST': 'mongodb+srv://root:Fajcon-witgob-2nizki@cluster-irtex-lzpoh.mongodb.net/',
+        'PASSWORD': 'kewPyz-2fiwma-goxhoc',
+        'HOST': 'mongodb://root:kewPyz-2fiwma-goxhoc@ds233571.mlab.com:33571/',
     }
 }
 
