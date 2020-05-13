@@ -7,3 +7,8 @@ irtex-client/
 
 
 pyvenv.cfg
+/irtex/dataset/.ipynb_checkpoints/
+/irtex/dataset/cifar-10-batches-py/
+/irtex/dataset/cifar10/
+/share/
+/etc/
