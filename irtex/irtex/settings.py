@@ -95,11 +95,10 @@ DATABASES = {
         'ENGINE': 'djongo',
         'NAME': 'irtex_test',
         'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
+        'PASSWORD': 'Fajcon-witgob-2nizki',
+        'HOST': 'mongodb+srv://root:Fajcon-witgob-2nizki@cluster-irtex-lzpoh.mongodb.net/',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
