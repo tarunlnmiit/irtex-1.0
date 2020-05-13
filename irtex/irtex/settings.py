@@ -28,7 +28,7 @@ SECRET_KEY = 'oze5h+s*m*325a8x8*=54u#v^v7(hl+@x1)pl@m_cs4gz-svz2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['irtex-engine.herokuapp.com']
 
 # CORS_ORIGIN_WHITELIST = [
 #     'http://localhost:8000',
