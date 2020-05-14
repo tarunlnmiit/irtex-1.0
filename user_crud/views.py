@@ -46,3 +46,9 @@ def user_detail(request, _id):
     elif request.method == 'DELETE':
         snippet.delete()
         return HttpResponse(status=204)
+
+
+def hello(request):
+    return JsonResponse({
+        'string': 'hello'
+    })
