@@ -91,14 +91,24 @@ WSGI_APPLICATION = 'irtex.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'djongo',
+#         'NAME': 'heroku_44bw2hgk',
+#         'USER': 'root',
+#         'PASSWORD': 'kewPyz-2fiwma-goxhoc',
+#         'HOST': 'mongodb://root:kewPyz-2fiwma-goxhoc@ds233571.mlab.com:33571/heroku_44bw2hgk',
+#         'PORT': 33571
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'heroku_44bw2hgk',
+        'NAME': 'irtex_test',
         'USER': 'root',
-        'PASSWORD': 'kewPyz-2fiwma-goxhoc',
-        'HOST': 'mongodb://root:kewPyz-2fiwma-goxhoc@ds233571.mlab.com:33571/heroku_44bw2hgk',
-        'PORT': 33571
+        'PASSWORD': 'Fajcon-witgob-2nizki',
+        'HOST': 'mongodb+srv://root:Fajcon-witgob-2nizki@cluster-irtex-lzpoh.mongodb.net/test?retryWrites=true&w=majority',
     }
 }
 
