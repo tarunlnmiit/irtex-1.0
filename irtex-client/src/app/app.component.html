@@ -1,0 +1,14 @@
+<div class="container">
+  <div>
+    <h3>Users collection</h3>
+    <div class="row">
+      <div class="col-sm-4" *ngFor="let user of userdata | async">
+        <div class="card">
+          <div class="card-body">
+            <span>{{user.name}} || {{user.dob}} || {{user.address}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
