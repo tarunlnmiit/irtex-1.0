@@ -12,3 +12,5 @@ pyvenv.cfg
 /irtex/dataset/cifar10/
 /share/
 /etc/
+iretx/__pycache__/
+*.pyc
