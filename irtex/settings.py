@@ -105,10 +105,10 @@ WSGI_APPLICATION = 'irtex.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'irtex_test',
-        'USER': 'root',
-        'PASSWORD': 'Fajcon-witgob-2nizki',
-        'HOST': 'mongodb+srv://root:Fajcon-witgob-2nizki@cluster-irtex-lzpoh.mongodb.net/test?retryWrites=true&w=majority',
+        'NAME': os.environ.get('MONGO_DATABASE'),
+        'USER': os.environ.get('MONGO_USER'),
+        'PASSWORD': os.environ.get('MONGO_PASSWORD'),
+        'HOST': os.environ.get('MONGO_HOST'),
     }
 }
 
