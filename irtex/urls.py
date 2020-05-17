@@ -23,7 +23,8 @@ urlpatterns = [
     path('', user_views.hello),
     path('admin/', admin.site.urls),
     path('userdata/', include('user_crud.urls')),
-    path('upload/', include('upload.urls'))
+    path('upload/', include('upload.urls')),
+    path('result/', include('result.urls'))
 ]
 
 if settings.DEBUG:

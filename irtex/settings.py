@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     'corsheaders',
     # local apps
     'user_crud',
-    'upload'
+    'upload',
+    'result'
 ]
 
 MIDDLEWARE = [
