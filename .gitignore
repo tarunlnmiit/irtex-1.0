@@ -14,3 +14,4 @@ pyvenv.cfg
 /etc/
 iretx/__pycache__/
 *.pyc
+/media/
