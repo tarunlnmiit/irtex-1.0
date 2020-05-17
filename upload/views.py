@@ -20,12 +20,13 @@ def randomString(stringLength=6):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
 
+
 class QueryImageUploadView(APIView):
     parser_class = (FileUploadParser,)
 
     def get(self, request, **kwargs):
         if request.GET.get('id', False):
-            id = request.GET['id']
+            id = request.GET.get('id')
             snippet = QueryImage.objects.get(_id=id)
             serializer = QueryImageSerializer(snippet)
             return JsonResponse(serializer.data, safe=False)
@@ -59,3 +60,17 @@ class QueryImageUploadView(APIView):
                 return Response(query_image_serializer.data, status=status.HTTP_201_CREATED)
             else:
                 return Response(query_image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    '''doesnt work yet'''
+    # def delete(self, request):
+    #     if request.GET.get('id', False):
+    #         id = request.GET.get('id')
+    #         print('here')
+    #         snippet = QueryImage.objects.get(_id=id)
+    #         snippet.delete()
+    #         serializer = QueryImageSerializer(snippet)
+    #         return JsonResponse(serializer.data, safe=False)
+    #     else:
+    #         return JsonResponse({
+    #             'message': 'No ID received'
+    #         })
