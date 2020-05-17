@@ -5,7 +5,7 @@ from .models import UserData
 from .serializers import UserDataSerializer
 
 
-@csrf_exempt
+# @csrf_exempt
 def user_list(request):
     """
     List all code snippets, or create a new user's data.
@@ -23,7 +23,7 @@ def user_list(request):
         return JsonResponse(serializer.errors, status=400)
 
 
-@csrf_exempt
+# @csrf_exempt
 def user_detail(request, _id):
     """
         Retrieve, update or delete a user's data.
