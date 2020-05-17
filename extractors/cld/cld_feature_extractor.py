@@ -63,7 +63,7 @@ class ColorLayoutComputer():
             [np.concatenate(dct_y_zigzag), np.concatenate(dct_cb_zigzag), np.concatenate(dct_cr_zigzag)])
 
 
-def get_similarity(self, descriptor1, descriptor2):
+def get_similarity(descriptor1, descriptor2):
     descriptor1 = descriptor1.astype(float)
     descriptor2 = descriptor2.astype(float)
     cos_sim = np.dot(descriptor1, descriptor2) / \
@@ -98,6 +98,6 @@ if __name__ == "__main__":
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(descriptor)
 
-        if count == 10:
-            break
+        if count == 20:
+            break  # remove later
     print('done')
