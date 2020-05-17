@@ -15,10 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-import user_crud.views as views
+from django.conf import settings
+from django.conf.urls.static import static
+import user_crud.views as user_views
 
 urlpatterns = [
-    path('', views.hello),
+    path('', user_views.hello),
     path('admin/', admin.site.urls),
-    path('', include('user_crud.urls'))
+    path('userdata/', include('user_crud.urls')),
+    path('upload/', include('upload.urls'))
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
