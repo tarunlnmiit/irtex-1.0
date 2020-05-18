@@ -6,11 +6,13 @@ from numpy.linalg import norm
 import argparse
 import math
 import csv
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='CLD Extractor')
 
-parser.add_argument('--path', help='path to images')
-parser.add_argument('--output', help='output folder')
+parser.add_argument('path', help='path to images')
+parser.add_argument('output', help='output folder')
+parser.add_argument('--number', help='number to extract')
 
 
 class ColorLayoutComputer():
@@ -75,29 +77,34 @@ def read_image(path):
     return cv2.imread(path)
 
 
+def extract_features(path, output):
+
+    fileList = os.listdir(path)
+    print('extracting cld for {} images'.format(len(fileList)))
+
+    feature_list = [["file_name", "cld", "label"]]
+
+    for label in tqdm(os.listdir(path)):
+        for img_file in tqdm(os.listdir(os.path.join(path, label))):
+            img = cv2.imread(os.path.join(path, label, img_file))
+            computer = ColorLayoutComputer()
+            descriptor = computer.compute(img)
+
+            row = [img_file, descriptor, label]
+            feature_list.append(row)
+    if not os.path.exists(output) and output != '':
+        os.makedirs(output)
+    out_file = os.path.join(output, 'cld.csv')
+
+    with open(out_file, 'wt') as file:
+        writer = csv.writer(file, delimiter=',',  lineterminator='\n')
+        writer.writerows(feature_list)
+        file.close()
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
     path = args.path
     output = args.output
 
-    fileList = os.listdir(path)
-    print('extracting cld for {} images'.format(len(fileList)))
-    count = 0
-    for file in fileList:
-        count += 1
-        img = cv2.imread(os.path.join(path, file))
-        computer = ColorLayoutComputer()
-        descriptor = computer.compute(img)
-        print(count)
-        out_dir = os.path.join(output, 'cld')
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
-        file_name = os.path.splitext(file)[0]
-        out_file = os.path.join(out_dir, file_name)
-        with open(out_file+'.csv', 'wt') as f:
-            writer = csv.writer(f, lineterminator='\n')
-            writer.writerow(descriptor)
-
-        if count == 20:
-            break  # remove later
-    print('done')
+    extract_features(path, output)
