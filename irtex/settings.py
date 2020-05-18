@@ -53,7 +53,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     # local apps
-    'user_crud'
+    'user_crud',
+    'upload',
+    'result'
 ]
 
 MIDDLEWARE = [
@@ -91,26 +93,26 @@ WSGI_APPLICATION = 'irtex.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'djongo',
-#         'NAME': 'heroku_44bw2hgk',
-#         'USER': 'root',
-#         'PASSWORD': 'kewPyz-2fiwma-goxhoc',
-#         'HOST': 'mongodb://root:kewPyz-2fiwma-goxhoc@ds233571.mlab.com:33571/heroku_44bw2hgk',
-#         'PORT': 33571
-#     }
-# }
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'djongo',
-        'NAME': os.environ.get('MONGO_DATABASE'),
-        'USER': os.environ.get('MONGO_USER'),
-        'PASSWORD': os.environ.get('MONGO_PASSWORD'),
-        'HOST': os.environ.get('MONGO_HOST'),
+if os.environ.get('environment') == 'production':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'djongo',
+            'NAME': os.environ.get('MONGO_DATABASE'),
+            'USER': os.environ.get('MONGO_USER'),
+            'PASSWORD': os.environ.get('MONGO_PASSWORD'),
+            'HOST': os.environ.get('MONGO_HOST'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'djongo',
+            'NAME': 'irtex_test',
+            'USER': 'root',
+            'PASSWORD': 'Fajcon-witgob-2nizki',
+            'HOST': 'mongodb+srv://root:Fajcon-witgob-2nizki@cluster-irtex-lzpoh.mongodb.net/test?retryWrites=true&w=majority',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -153,5 +155,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 django_heroku.settings(locals())
