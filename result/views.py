@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.conf import settings
 
 from upload.models import QueryImage
+from upload.serializers import QueryImageSerializer
 from region_based_descriptor.RBSDescriptor import RBSDescriptor
 
 import cv2
@@ -48,4 +49,14 @@ def getCLDResults(request, _id):
         print(traceback.print_exc())
     return JsonResponse({
         'result': sim[:10]
+    })
+
+
+def image_data(request, _id):
+    image_instance = QueryImage.objects.get(_id=_id)
+    serializer = QueryImageSerializer(image_instance)
+
+    return JsonResponse({
+        'name': serializer.data['file'].split('/')[-1],
+        'url': serializer.data['file'],
     })

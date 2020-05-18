@@ -18,10 +18,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 import user_crud.views as user_views
+import result.views as result_views
 
 urlpatterns = [
     path('', user_views.hello),
     path('admin/', admin.site.urls),
+    path('image/<str:_id>', result_views.image_data),
     path('userdata/', include('user_crud.urls')),
     path('upload/', include('upload.urls')),
     path('result/', include('result.urls'))
