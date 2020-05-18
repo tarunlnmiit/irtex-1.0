@@ -7,6 +7,8 @@ irtex-client/node_modules/
 
 
 pyvenv.cfg
+*.pyc
+/include/
 /irtex/dataset/.ipynb_checkpoints/
 /irtex/dataset/cifar-10-batches-py/
 /irtex/dataset/cifar10/
