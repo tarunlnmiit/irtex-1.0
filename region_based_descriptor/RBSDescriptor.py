@@ -1,14 +1,20 @@
 from django.conf import settings
 
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import cv2
-from tqdm import tqdm
 import mahotas
-import csv
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
+import json
+from json import JSONEncoder
+
+
+class NumpyArrayEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return JSONEncoder.default(self, obj)
 
 
 class RBSDescriptor:
@@ -16,24 +22,18 @@ class RBSDescriptor:
         self.radius = 16
         feature_csv_path = os.path.join(settings.BASE_DIR, 'region_based_descriptor')
         df = pd.read_csv(os.path.join(feature_csv_path, 'moments.csv'))
+        self.file_name = df['file_name']
         self.moments = df['moments']
         self.moments = [[float(i) for i in elem.strip('[] ').split()] for elem in self.moments]
         self.labels = df['label']
-        self.file_name = df['file_name']
 
     def similarity(self, query):
         q_sim = []
-        #i = 0
-        #for moment in self.moments:
-            #moment = np.reshape(moment, (1, -1))
-            #sim = cosine_similarity(moment, query)
-            #if sim > 0.90:
-            #    sim_temp = [self.file_name[i], sim, self.labels[i]]
-            #    q_sim.append(sim_temp)
-            #i += 1
         q_sim = cosine_similarity(self.moments, query)
+        json_qsim = [{"file_name": self.file_name[i], "similarity": q_sim[i], "labels": self.labels[i]} for i in range(len(q_sim))]
+        json_qsim = json.dumps(json_qsim, cls=NumpyArrayEncoder)
 
-        return q_sim
+        return json_qsim
 
     def zernike_moments(self, image):
         return mahotas.features.zernike_moments(image, self.radius).reshape(1, -1)
@@ -43,7 +43,7 @@ class RBSDescriptor:
 
     def image_preprocessing(self, image):
         img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # img = cv2.resize(img, (256, 256))
+        img = cv2.resize(img, (32, 32))
         # img = img + np.random.normal(scale=2, size=img.shape)
         return img
 
