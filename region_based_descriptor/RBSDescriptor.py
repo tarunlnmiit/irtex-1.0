@@ -31,7 +31,7 @@ class RBSDescriptor:
         q_sim = []
         q_sim = cosine_similarity(self.moments, query)
         json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i], 'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
-        json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
+        # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
 
         return json_qsim
 
