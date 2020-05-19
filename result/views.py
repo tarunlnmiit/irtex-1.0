@@ -26,11 +26,15 @@ def getRBSDResults(request, _id):
         sim = rbsd.similarity(q_moment)
         sim.sort(key=lambda x: x['similarity'], reverse=True)
         print(type(sim))
+        response = JsonResponse({
+            'result': sim[:10]
+        })
     except Exception as e:
         print(traceback.print_exc())
-    return JsonResponse({
-        'result': sim[:10]
-    })
+        response = JsonResponse({
+            'error': traceback.print_exc()
+        })
+    return response
 
 
 def getCLDResults(request, _id):
@@ -46,11 +50,15 @@ def getCLDResults(request, _id):
         sim = get_similarity(descriptor)
         sim.sort(key=lambda x: x['similarity'], reverse=True)
         print(len(sim))
+        response = JsonResponse({
+            'result': sim[:10]
+        })
     except Exception as e:
         print(traceback.print_exc())
-    return JsonResponse({
-        'result': sim[:10]
-    })
+        response = JsonResponse({
+            'error': traceback.print_exc()
+        })
+    return response
 
 
 def image_data(request, _id):
