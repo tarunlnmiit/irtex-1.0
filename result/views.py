@@ -4,8 +4,10 @@ from django.conf import settings
 from upload.models import QueryImage
 from upload.serializers import QueryImageSerializer
 from region_based_descriptor.RBSDescriptor import RBSDescriptor
+from color_layout_descriptor.CLDescriptor import CLDescriptor, get_similarity
 
 import cv2
+import numpy as np
 import os
 import traceback
 
@@ -37,14 +39,13 @@ def getCLDResults(request, _id):
         media_path = os.path.join(settings.BASE_DIR, 'media')
         image_path = os.path.join(media_path, str(image_instance.file))
 
-        rbsd = RBSDescriptor()
+        cld = CLDescriptor()
         img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-        img_array = rbsd.image_preprocessing(img_array)
+        descriptor = np.around(cld.compute(img_array), decimals=4).reshape(1, -1)
 
-        q_moment = rbsd.zernike_moments(img_array)
-        sim = rbsd.similarity(q_moment)
+        sim = get_similarity(descriptor)
         sim.sort(key=lambda x: x['similarity'], reverse=True)
-        print(type(sim))
+        print(len(sim))
     except Exception as e:
         print(traceback.print_exc())
     return JsonResponse({
