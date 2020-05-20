@@ -1,3 +1,5 @@
+from django.conf import settings
+
 import numpy as np
 import os
 import cv2
@@ -18,12 +20,13 @@ class ZernikeMoments:
 
 desc = ZernikeMoments(16)
 zernike = []
-data_list = [["file_name", "moments", "label"]]
 
-dataFile = "C:\\Users\\Administrator\\Desktop\\libin_ovgu\\SoSe20\\IRTEX Project\\cifar10"
-
+dataFile = os.path.join(settings.BASE_DIR, 'media', 'cifar10')
 path = os.path.join(dataFile)
 
+data_list = [["file_name", "moments", "label"]]
+
+# Loading the image dataset and converting into zernike moments
 for label in tqdm(os.listdir(path)):
 	for img in tqdm(os.listdir(os.path.join(path, label))):
 		img_array = cv2.imread(os.path.join(path, label, img), cv2.IMREAD_UNCHANGED)
@@ -34,8 +37,11 @@ for label in tqdm(os.listdir(path)):
 
 		row = [img, moments, label]
 		data_list.append(row)
+
 		zernike.append(moments)
 
+
+# Storing the extracted features into CSV file
 with open('moments.csv', 'w', newline='') as file:
 	writer = csv.writer(file, delimiter=',')
 	writer.writerows(data_list)
