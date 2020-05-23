@@ -77,6 +77,7 @@ def get_similarity(query):
     labels = df['label']
 
     q_sim = cosine_similarity(cld, query)
+
     json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
                   'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
 
@@ -86,10 +87,10 @@ def get_similarity(query):
     cld = [[float(i) for i in elem.strip('[] ').split()] for elem in cld]
     labels = df['label']
 
+    q_sim = cosine_similarity(cld, query)
+
     json_qsim.extend([{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
                        'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))])
-
-    q_sim = cosine_similarity(cld, query)
 
     return json_qsim
 
