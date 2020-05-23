@@ -17,3 +17,5 @@ pyvenv.cfg
 iretx/__pycache__/
 *.pyc
 /media/
+/color_layout_descriptor/Untitled.ipynb
+/color_layout_descriptor/.ipynb_checkpoints/
