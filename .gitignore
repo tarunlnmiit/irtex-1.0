@@ -19,3 +19,6 @@ iretx/__pycache__/
 /media/
 /color_layout_descriptor/Untitled.ipynb
 /color_layout_descriptor/.ipynb_checkpoints/
+color_layout_descriptor/cld_1.csv
+color_layout_descriptor/cld_2.csv
+region_based_descriptor/moments.csv
