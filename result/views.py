@@ -28,7 +28,7 @@ def getCombinedResults(request, _id):
 
         cld = CLDescriptor()
         img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-        descriptor = np.around(cld.compute(img_array), decimals=4).reshape(1, -1)
+        descriptor = cld.compute(img_array).reshape(1, -1)
 
         sim_cld = get_similarity(descriptor)
         # sim_cld.sort(key=lambda x: x['similarity'], reverse=True)
@@ -146,11 +146,10 @@ def getCLDResults(request, _id):
 
         cld = CLDescriptor()
         img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-        descriptor = np.around(cld.compute(img_array), decimals=4).reshape(1, -1)
+        descriptor = cld.compute(img_array).reshape(1, -1)
 
         sim = get_similarity(descriptor)
         sim.sort(key=lambda x: x['similarity'], reverse=True)
-        print(len(sim))
         response = JsonResponse({
             'result': sim[:200]
         })
