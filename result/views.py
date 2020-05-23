@@ -24,14 +24,14 @@ def getCombinedResults(request, _id):
         img_array = rbsd.image_preprocessing(img_array)
         q_moment = rbsd.zernike_moments(img_array)
         sim_rbsd = rbsd.similarity(q_moment)
-        # sim_rbsd.sort(key=lambda x: x['similarity'], reverse=True)
+        sim_rbsd.sort(key=lambda x: x['similarity'], reverse=True)
 
         cld = CLDescriptor()
         img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         descriptor = cld.compute(img_array).reshape(1, -1)
 
         sim_cld = get_similarity(descriptor)
-        # sim_cld.sort(key=lambda x: x['similarity'], reverse=True)
+        sim_cld.sort(key=lambda x: x['similarity'], reverse=True)
 
         sim = OrderedDict()
 
@@ -45,10 +45,11 @@ def getCombinedResults(request, _id):
 
         sim = list(sim.values())
         sim.sort(key=lambda x: x['similarity'], reverse=True)
-        result = sim[:200]
 
         response = JsonResponse({
-            'result': result
+            'result': sim[:200],
+            'cld': sim_cld[:200],
+            'rbsd': sim_rbsd[:200]
         })
 
         # TODO this code if server side pagination is needed
