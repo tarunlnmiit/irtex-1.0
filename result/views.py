@@ -152,7 +152,7 @@ def getCLDResults(request, _id):
         sim.sort(key=lambda x: x['similarity'], reverse=True)
         print(len(sim))
         response = JsonResponse({
-            'result': sim[:10]
+            'result': sim[:200]
         })
     except Exception as e:
         print(traceback.print_exc())
