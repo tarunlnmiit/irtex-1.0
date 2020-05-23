@@ -21,3 +21,10 @@ class DatasetImage(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     label = models.CharField(max_length=32, null=False, blank=False)
     metadata = models.DictField(null=True)
+
+
+class QueryImageSimilarity(models.Model):
+    _id = models.ObjectIdField()
+    query_image_id = models.CharField(max_length=128, null=False, blank=False)
+    similarities = models.ListField()
+    created = models.DateTimeField(auto_now_add=True)
