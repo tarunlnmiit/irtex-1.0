@@ -6,6 +6,7 @@ import cv2
 import mahotas
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
+import pickle
 import json
 from json import JSONEncoder
 
@@ -22,17 +23,18 @@ class RBSDescriptor:
         self.radius = 16
 # Loading of the CSV file
         feature_csv_path = os.path.join(settings.BASE_DIR, 'region_based_descriptor')
-        df = pd.read_csv(os.path.join(feature_csv_path, 'moments.csv'))
+        df = pd.read_pickle(os.path.join(feature_csv_path, 'moments.pkl'))
         self.file_name = df['file_name']
         self.moments = df['moments']
-        self.moments = [[float(i) for i in elem.strip('[] ').split()] for elem in self.moments]
+        self.moments = self.moments.tolist()
         self.labels = df['label']
 
 # Calculate similarity between the query image and extracted feature and converting it into json format
     def similarity(self, query):
         q_sim = []
         q_sim = cosine_similarity(self.moments, query)
-        json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i], 'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
+        json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
+                      'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
         # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
 
         return json_qsim
