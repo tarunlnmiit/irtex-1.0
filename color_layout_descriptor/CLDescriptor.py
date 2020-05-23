@@ -41,9 +41,9 @@ class CLDescriptor:
         icon = cv2.cvtColor(
             np.array(averages, dtype=np.uint8), cv2.COLOR_BGR2YCR_CB)
         y, cr, cb = cv2.split(icon)
-        dct_y = cv2.dct(np.float32(y))
-        dct_cb = cv2.dct(np.float32(cb))
-        dct_cr = cv2.dct(np.float32(cr))
+        dct_y = cv2.dct(np.float64(y))
+        dct_cb = cv2.dct(np.float64(cb))
+        dct_cr = cv2.dct(np.float64(cr))
         dct_y_zigzag = []
         dct_cb_zigzag = []
         dct_cr_zigzag = []
@@ -68,33 +68,6 @@ class CLDescriptor:
             [np.concatenate(dct_y_zigzag), np.concatenate(dct_cb_zigzag), np.concatenate(dct_cr_zigzag)])
 
 
-def get_similarity(query):
-    feature_csv_path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
-    df = pd.read_csv(os.path.join(feature_csv_path, 'cld_1.csv'))
-    file_name = df['file_name']
-    cld = df['cld']
-    cld = [[float(i) for i in elem.strip('[] ').split()] for elem in cld]
-    labels = df['label']
-
-    q_sim = cosine_similarity(cld, query)
-
-    json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
-                  'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
-
-    df = pd.read_csv(os.path.join(feature_csv_path, 'cld_2.csv'))
-    file_name = df['file_name']
-    cld = df['cld']
-    cld = [[float(i) for i in elem.strip('[] ').split()] for elem in cld]
-    labels = df['label']
-
-    q_sim = cosine_similarity(cld, query)
-
-    json_qsim.extend([{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
-                       'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))])
-
-    return json_qsim
-
-
 def read_image(path):
     return cv2.imread(path)
 
@@ -110,7 +83,7 @@ def extract_features(path, output):
         for img_file in tqdm(os.listdir(os.path.join(path, label))):
             img = cv2.imread(os.path.join(path, label, img_file))
             computer = CLDescriptor()
-            descriptor = np.around(computer.compute(img), decimals=4)
+            descriptor = computer.compute(img)
 
             row = [img_file, descriptor, label]
             feature_list.append(row)
@@ -121,17 +94,53 @@ def extract_features(path, output):
 
     n = len(feature_list)
 
-    with open(out_file_1, 'wt') as file:
-        writer = csv.writer(file, delimiter=',',  lineterminator='\n')
-        writer.writerows([["file_name", "cld", "label"]])
-        writer.writerows(feature_list[:n//2])
-        file.close()
+    # with open(out_file_1, 'wt') as file:
+    #     writer = csv.writer(file, delimiter=',',  lineterminator='\n')
+    #     writer.writerows([["file_name", "cld", "label"]])
+    #     writer.writerows(feature_list[:n//2])
+    #     file.close()
+    #
+    # with open(out_file_2, 'wt') as file:
+    #     writer = csv.writer(file, delimiter=',',  lineterminator='\n')
+    #     writer.writerows([["file_name", "cld", "label"]])
+    #     writer.writerows(feature_list[n//2:])
+    #     file.close()
 
-    with open(out_file_2, 'wt') as file:
-        writer = csv.writer(file, delimiter=',',  lineterminator='\n')
-        writer.writerows([["file_name", "cld", "label"]])
-        writer.writerows(feature_list[n//2:])
-        file.close()
+    # filename = 'cld'
+    # outfile = open(filename, 'wb')
+    # pickle.dump(feature_list, outfile)
+    # outfile.close()
+    columns = feature_list.pop(0)
+    df = pd.DataFrame(feature_list, columns=["file_name", "cld", "label"])
+    pd.to_pickle(df, 'cld.pkl')
+
+
+def get_similarity(query):
+    feature_csv_path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
+    df = pd.read_pickle(os.path.join(feature_csv_path, 'cld.pkl'))
+    # df = pd.read_csv(os.path.join(feature_csv_path, 'cld_1.csv'))
+    file_name = df['file_name']
+    cld = df['cld'].tolist()
+    # cld = [[float(i) for i in elem.strip('[] ').split()] for elem in cld]
+    labels = df['label']
+
+    q_sim = cosine_similarity(cld, query)
+
+    json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
+                  'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+
+    # df = pd.read_csv(os.path.join(feature_csv_path, 'cld_2.csv'))
+    # file_name = df['file_name']
+    # cld = df['cld']
+    # cld = [[float(i) for i in elem.strip('[] ').split()] for elem in cld]
+    # labels = df['label']
+    #
+    # q_sim = cosine_similarity(cld, query)
+    #
+    # json_qsim.extend([{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
+    #                    'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))])
+
+    return json_qsim
 
 
 if __name__ == "__main__":
