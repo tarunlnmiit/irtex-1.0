@@ -65,6 +65,4 @@
       
       `python3 MomentsExtractor.py --path <dataset path> --output <output path> --type <feature output type csv or pkl>`
 
-  >> The flow of the whole web application from a user's perspective is given in the repository of frontend. Here is the link for the same.
-      
-      https://github.com/tarunlnmiit/irtex-client
+  >> The flow of the whole web application from a user's perspective is given in the repository of frontend. Here is the link for the same. https://github.com/tarunlnmiit/irtex-client
