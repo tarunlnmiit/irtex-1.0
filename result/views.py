@@ -41,7 +41,10 @@ def getCombinedResults(request, _id):
         for item in sim_cld:
             if item['name'] in sim:
                 # print(sim[item['name']], sim[item['name']]['similarity'], item['name'], item['similarity'])
-                sim[item['name']]['similarity'] = np.average([sim[item['name']]['similarity'], item['similarity']])
+                avg = np.average([sim[item['name']]['similarity'], item['similarity']])
+                if avg > 100:
+                    avg = float(100)
+                sim[item['name']]['similarity'] = avg
 
         sim = list(sim.values())
         sim.sort(key=lambda x: x['similarity'], reverse=True)
