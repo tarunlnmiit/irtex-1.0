@@ -36,7 +36,7 @@ if __name__ == "__main__":
     images = []
 
     dataFile = os.getcwd()
-    path_toy = os.path.join(dataFile, 'toy_dataset')
+    path_toy = os.path.join(dataFile, '../toy_dataset')
     labels = []
     for label in tqdm(os.listdir(path_toy)):
         img_array = cv2.imread(os.path.join(path_toy, label), cv2.IMREAD_GRAYSCALE)
