@@ -11,12 +11,6 @@ import csv
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
-parser = argparse.ArgumentParser(description='CLD Extractor')
-
-parser.add_argument('path', help='path to images')
-parser.add_argument('output', help='output folder')
-parser.add_argument('--number', help='number to extract')
-
 
 class CLDescriptor:
 
@@ -72,7 +66,7 @@ def read_image(path):
     return cv2.imread(path)
 
 
-def extract_features(path, output):
+def extract_features(path, output, type):
 
     fileList = os.listdir(path)
     print('extracting cld for {} images'.format(len(fileList)))
@@ -89,39 +83,25 @@ def extract_features(path, output):
             feature_list.append(row)
     if not os.path.exists(output) and output != '':
         os.makedirs(output)
-    out_file_1 = os.path.join(output, 'cld_1.csv')
-    out_file_2 = os.path.join(output, 'cld_2.csv')
 
-    n = len(feature_list)
+    if type == 'csv':
+        out_file = os.path.join(output, 'cld.csv')
 
-    # with open(out_file_1, 'wt') as file:
-    #     writer = csv.writer(file, delimiter=',',  lineterminator='\n')
-    #     writer.writerows([["file_name", "cld", "label"]])
-    #     writer.writerows(feature_list[:n//2])
-    #     file.close()
-    #
-    # with open(out_file_2, 'wt') as file:
-    #     writer = csv.writer(file, delimiter=',',  lineterminator='\n')
-    #     writer.writerows([["file_name", "cld", "label"]])
-    #     writer.writerows(feature_list[n//2:])
-    #     file.close()
-
-    # filename = 'cld'
-    # outfile = open(filename, 'wb')
-    # pickle.dump(feature_list, outfile)
-    # outfile.close()
-    columns = feature_list.pop(0)
-    df = pd.DataFrame(feature_list, columns=["file_name", "cld", "label"])
-    pd.to_pickle(df, 'cld.pkl')
+        with open(out_file, 'wt') as file:
+            writer = csv.writer(file, delimiter=',',  lineterminator='\n')
+            writer.writerows([["file_name", "cld", "label"]])
+            writer.writerows(feature_list)
+            file.close()
+    else:
+        df = pd.DataFrame(feature_list, columns=["file_name", "cld", "label"])
+        pd.to_pickle(df, 'cld.pkl')
 
 
 def get_similarity(query):
-    feature_csv_path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
-    df = pd.read_pickle(os.path.join(feature_csv_path, 'cld.pkl'))
-    # df = pd.read_csv(os.path.join(feature_csv_path, 'cld_1.csv'))
+    feature__path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
+    df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
     file_name = df['file_name']
     cld = df['cld'].tolist()
-    # cld = [[float(i) for i in elem.strip('[] ').split()] for elem in cld]
     labels = df['label']
 
     q_sim = cosine_similarity(cld, query)
@@ -129,23 +109,25 @@ def get_similarity(query):
     json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
                   'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
 
-    # df = pd.read_csv(os.path.join(feature_csv_path, 'cld_2.csv'))
-    # file_name = df['file_name']
-    # cld = df['cld']
-    # cld = [[float(i) for i in elem.strip('[] ').split()] for elem in cld]
-    # labels = df['label']
-    #
-    # q_sim = cosine_similarity(cld, query)
-    #
-    # json_qsim.extend([{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
-    #                    'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))])
-
     return json_qsim
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='CLD Extractor')
+
+    parser.add_argument('--path', help='path to images')
+    parser.add_argument('--output', help='output folder')
+    parser.add_argument('--number', help='number to extract')
+    parser.add_argument('--type', help='type of output csv or pkl')
     args = parser.parse_args()
     path = args.path
     output = args.output
+    type = args.type
 
-    extract_features(path, output)
+    if type is None or type not in ['csv', 'pkl']:
+        print('='*10)
+        print('Invalid output type provided. It should be csv or pkl')
+        print('='*10)
+        exit(0)
+    else:
+        extract_features(path, output, type)
