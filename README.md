@@ -51,7 +51,7 @@
       2. --output - path for features output
       3. --type - features to be output in csv or a pkl (pickle) file
       
-      First navigate to directory **color_layout_descriptor**
+      First navigate to directory color_layout_descriptor
       
       `python3 CLDescriptor.py --path <dataset path> --output <output path> --type <feature output type csv or pkl>`
 
@@ -61,7 +61,7 @@
       2. --output - path for features output
       3. --type - features to be output in csv or a pkl (pickle) file
       
-      First navigate to directory **region_based_descriptor**
+      First navigate to directory region_based_descriptor
       
       `python3 MomentsExtractor.py --path <dataset path> --output <output path> --type <feature output type csv or pkl>`
 
