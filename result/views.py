@@ -49,7 +49,8 @@ def getCombinedResults(request, _id):
         response = JsonResponse({
             'result': sim[:200],
             'cld': sim_cld[:200],
-            'rbsd': sim_rbsd[:200]
+            'rbsd': sim_rbsd[:200],
+            'features': ['CLD', 'RBSD', 'Combined CLD & RBSD']
         })
 
         # TODO this code if server side pagination is needed
@@ -128,7 +129,8 @@ def getRBSDResults(request, _id):
         result = sim_rbsd[:200]
 
         response = JsonResponse({
-            'result': result
+            'result': result,
+            'features': ['RBSD']
         })
     except Exception as e:
         print(traceback.print_exc())
@@ -152,7 +154,8 @@ def getCLDResults(request, _id):
         sim = get_similarity(descriptor)
         sim.sort(key=lambda x: x['similarity'], reverse=True)
         response = JsonResponse({
-            'result': sim[:200]
+            'result': sim[:200],
+            'features': ['CLD']
         })
     except Exception as e:
         print(traceback.print_exc())
