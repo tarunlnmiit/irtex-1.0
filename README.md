@@ -45,7 +45,7 @@
   
   >> The code currently consists of Color Layout Descriptor(CLD) generator and Region Based Shape Descriptor(RBSD) generator. The results sent to the frontend are currently ranked on the average similarities computed on CLD and RBSD along with the individual ranked results of CLD and RBSD.
   
-    > In order to run the CLD extractor file, the command is as follows:
+   * In order to run the CLD extractor file, the command is as follows:
       There are 3 inputs needed for this file to execute. 
       1. --path - input images path
       2. --output - path for features output
@@ -53,9 +53,9 @@
       
       First navigate to directory color_layout_descriptor
       
-      `python3 CLDescriptor.py --path <dataset path> --output <output path> --type <feature output type csv or pkl>`
+     `python3 CLDescriptor.py --path <dataset path> --output <output path> --type <feature output type csv or pkl>`
 
-    > In order to run the RBSD extractor file, the command is as follows:
+   * In order to run the RBSD extractor file, the command is as follows:
       There are 3 inputs needed for this file to execute. 
       1. --path - input images path
       2. --output - path for features output
@@ -63,6 +63,6 @@
       
       First navigate to directory region_based_descriptor
       
-      `python3 MomentsExtractor.py --path <dataset path> --output <output path> --type <feature output type csv or pkl>`
+     `python3 MomentsExtractor.py --path <dataset path> --output <output path> --type <feature output type csv or pkl>`
 
   >> The flow of the whole web application from a user's perspective is given in the repository of frontend. Here is the link for the same. https://github.com/tarunlnmiit/irtex-client
