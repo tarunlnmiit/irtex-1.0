@@ -1,5 +1,7 @@
 # IRTEX-1.0
 
+* The deployed project can be reached through https://irtex-client.herokuapp.com
+
 ## This is the working Scientific project about an Image Retrieval Engine
 
 > The project currently consists of 5 branches:
