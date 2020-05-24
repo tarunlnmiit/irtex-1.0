@@ -50,7 +50,7 @@ def getCombinedResults(request, _id):
             'result': sim[:200],
             'cld': sim_cld[:200],
             'rbsd': sim_rbsd[:200],
-            'features': ['CLD', 'RBSD', 'Combined CLD & RBSD']
+            'features': ['Combined CLD & RBSD', 'CLD', 'RBSD']
         })
 
         # TODO this code if server side pagination is needed
