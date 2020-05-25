@@ -14,6 +14,8 @@
 > The application can be initiated in the following manner but it has some prerequisites.
 
   >> Python (**Use Python 3**) virtualenv must be installed in the system. More details on this link about installation and usage -> https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
+
+  >> C++ Compiler is needed to run Mahotas library. You can download it from this link. Just download and run it -> https://download.microsoft.com/download/5/f/7/5f7acaeb-8363-451f-9425-68a90f98b238/visualcppbuildtools_full.exe?fixForIE=.exe.
   
   * Clone the repository in the virtualenv directory created and checkout to **milestone2** branch. (For example the virtualenv directory name is **venv**) 
       
