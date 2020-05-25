@@ -23,7 +23,7 @@ from sklearn.metrics.cluster import adjusted_rand_score
 
 #load input data CIFAR 
 def Load_data(dataFile):
-    print("load datafile started")
+    #print("load datafile started")
     image_array=[]
     dim = (128,128)
     for label in (os.listdir(dataFile)):
@@ -40,8 +40,8 @@ def Load_data(dataFile):
             img_cat.append(img_read)
             img_cat.append(label)
             image_array.append(img_cat)
-            # if(count==1):
-            #     break
+            if(count==1):
+                break
     return image_array
 
 #CNN model architecture (Conv + BatchNormalisation + Conv + BatchNormalisation)--> Initial Conv layer
@@ -82,7 +82,7 @@ def Segmentation(image):
 
         #hyperparameters initialisation
         nChannel=5
-        maxIter= 500
+        maxIter= 100
         min_clusters= 3   
         lr=0.1
         nConv=3
@@ -183,18 +183,21 @@ def Similarity(segmented_images,segmented_query_img,image_array):
     for i in range(len(segmented_images)):
         compared=[]
         image=(segmented_images[i])
-        sim = ssim(segmented_query_img, image,multichannel=True)
-    #   score = adjusted_rand_score(np.asarray(image),np.asarray(segmented_query_img))
+       # sim = ssim(segmented_query_img, image,multichannel=True)
+        score = adjusted_rand_score(segmented_query_img.flatten(),image.flatten())
         #print (i,sim,"  ")
         compared.append(image_array[i][0])
-        compared.append(sim)
+        compared.append(score)
         similarity.append(compared)
     return similarity
 
 
 #Inputs , segmentation , query image and similarity computation calls 
 
+
 dataFile="C:\\Users\\Gurpreet\\Desktop\\python\\IRTEX-Segmentation\\media\\cifar10"
+# dataFile = os.path.join(settings.BASE_DIR, 'media', 'cifar10')
+# dataFile = os.path.join(dataFile)
 
 loaded_data=Load_data(dataFile)
 print("dataset Loaded")
