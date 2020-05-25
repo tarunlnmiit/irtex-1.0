@@ -40,8 +40,8 @@ def Load_data(dataFile):
             img_cat.append(img_read)
             img_cat.append(label)
             image_array.append(img_cat)
-            if(count==1):
-                break
+            # if(count==1):
+            #     break
     return image_array
 
 #CNN model architecture (Conv + BatchNormalisation + Conv + BatchNormalisation)--> Initial Conv layer
@@ -82,7 +82,7 @@ def Segmentation(image):
 
         #hyperparameters initialisation
         nChannel=5
-        maxIter= 100
+        maxIter= 500
         min_clusters= 3   
         lr=0.1
         nConv=3
