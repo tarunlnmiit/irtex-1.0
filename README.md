@@ -87,9 +87,16 @@
       First navigate to directory **segmentaion**. 
       There are 2 inputs needed for this file to execute.
       1. --path - query image path which is required
-      2. --check - Number of images per class to compare the query with by default its consider 2
+      2. --check - Number of images per class to compare the query with by default its consider 2 (optional)
 
       `python3 slic.py --path <query image path> --check <# images>`
+      
+   * In order to run the ResNet20 extractor file on cifar10 dataset, the command is as follows: 
+      First navigate to directory **resnet20_cifar_10_features**. It takes query image as **resnet20_cifar_10_features/toy_data/airplane_22.png**
+      There is 1 input needed for this file to execute.
+      1. --stop_at - number of items per folder to extract (optional) defaults to all
+
+      `python3 ResNet20FeatureExtractor.py --stop_at <# folder>`
      
    *  Since the csv file generated are big in size and we are internally using pickle to read the extracted feature vectors, we have uploaded the pre-generated csv files on Google Drive.
       
