@@ -5,6 +5,8 @@ from upload.models import QueryImage, QueryImageSimilarity
 from upload.serializers import QueryImageSerializer
 from region_based_descriptor.RBSDescriptor import RBSDescriptor
 from color_layout_descriptor.CLDescriptor import CLDescriptor, get_similarity
+from vgg16_imagenet_features.VGG16FeatureExractor import extract_feature_vgg,get_similarity_vgg
+from resnet20_cifar_10_features.ResNet20FeatureExtractor import extract_feature_resnet,get_similarity_resnet
 
 import cv2
 import numpy as np
@@ -167,6 +169,53 @@ def getCLDResults(request, _id):
         })
     finally:
         return response
+
+def getVGG16Results(request, _id):
+    try:
+        image_instance = QueryImage.objects.get(_id=_id)
+        media_path = os.path.join(settings.BASE_DIR, 'media')
+        image_path = os.path.join(media_path, str(image_instance.file))
+        feature = extract_feature_vgg(image_path)
+        sim = get_similarity_vgg(feature,settings.BASE_DIR)
+
+        sim.sort(key=lambda x: x['similarity'], reverse=True)
+        print(len(sim))
+        response = JsonResponse({
+            'result': sim[:200],
+            'cld': [],
+            'rbsd':[],
+            'features': ['VGG', 'CLD', 'RBSD']
+        })
+    except Exception as e:
+        print(traceback.print_exc())
+        response = JsonResponse({
+            'error': traceback.print_exc()
+        })
+    return response
+
+
+def getResnet20Results(request, _id):
+    try:
+        image_instance = QueryImage.objects.get(_id=_id)
+        media_path = os.path.join(settings.BASE_DIR, 'media')
+        image_path = os.path.join(media_path, str(image_instance.file))
+        feature = extract_feature_resnet(image_path)
+        sim = get_similarity_resnet(feature,settings.BASE_DIR)
+
+        sim.sort(key=lambda x: x['similarity'], reverse=True)
+        print(len(sim))
+        response = JsonResponse({
+            'result': sim[:200],
+            'cld': [],
+            'rbsd': [],
+            'features': ['RESNET', 'CLD', 'RBSD']
+        })
+    except Exception as e:
+        print(traceback.print_exc())
+        response = JsonResponse({
+            'error': traceback.print_exc()
+        })
+    return response
 
 
 def image_data(request, _id):
