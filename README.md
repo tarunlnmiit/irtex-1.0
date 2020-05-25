@@ -45,7 +45,7 @@
       
       The server will be started at http://127.0.0.1:8000
   
-  >> The code currently consists of Color Layout Descriptor(CLD) generator and Region Based Shape Descriptor(RBSD) generator. The results sent to the frontend are currently ranked on the average similarities computed on CLD and RBSD along with the individual ranked results of CLD and RBSD.
+  >> The code on server currently consists of Color Layout Descriptor(CLD) generator and Region Based Shape Descriptor(RBSD) generator. The results sent to the frontend are currently ranked on the average similarities computed on CLD and RBSD along with the individual ranked results of CLD and RBSD. But, all the feature extraction implementations can be individually run as standalone python scripts as follows:
   
    * In order to run the CLD extractor file, the command is as follows:
       First navigate to directory **color_layout_descriptor**.
@@ -125,5 +125,7 @@
       [RBSD feature csv](https://drive.google.com/file/d/1Scxi92KdOyhW_-G1DCyGmOFmcqoFaUa2/view?usp=sharing)
       
       [CLD feature csv](https://drive.google.com/file/d/1Y4SBJpHMyAMGNBTII5TnF7TuTyaLMb8n/view?usp=sharing)
+      
+  >> The above mentioned steps were for standalone execution of feature extraction scripts but it is also possible to hit the endpoints on the local server to fetch results based on features. They are as follows (A REST client like POSTMAN is best for such endpoints execution). A detailed excel sheet with REQUEST TYPE, REQUEST BODY, ENDPOINT, RESPONSE is available [here](https://docs.google.com/spreadsheets/d/1kziyIMgWodt4xXbm9Y_tJydpWyEpkUpgaSGGJ9yiJUw/edit?usp=sharing).
 
   >> The flow of the whole web application from a user's perspective is given in the repository of frontend. Here is the link for the same. https://github.com/tarunlnmiit/irtex-client
