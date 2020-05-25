@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--path', help='path to query image', required=True)
     parser.add_argument('--check', help='Number of images to check with per class', default=2)
-    parser.add_argument('--method', help='Segmentation Method 0-Threshold 1-SLIC', default=0)
+    parser.add_argument('--method', help='Segmentation Method 0-Threshold 1-SLIC', default='0')
     args = parser.parse_args()
     path = args.path
     n = args.check
