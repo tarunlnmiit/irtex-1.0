@@ -83,20 +83,42 @@
      
      If no query image is provided then one image from toy dataset is taken as query.
      
-   * In order to run the SLIC Segmenation file on cifar10 dataset, the command is as follows: 
+   * In order to run the Segmenation extractor file on cifar10 dataset, the command is as follows: 
       First navigate to directory **segmentaion**. 
       There are 2 inputs needed for this file to execute.
       1. --path - query image path which is required
       2. --check - Number of images per class to compare the query with by default its consider 2 (optional)
+      3. --method - Method for segmentation 0 = Threshold, 1 = SLIC By default 0 is selected
 
-      `python3 slic.py --path <query image path> --check <# images>`
+      `python3 segmentation.py --path <query image path> --check <# images> --method <0/1>`
       
-   * In order to run the ResNet20 extractor file on cifar10 dataset, the command is as follows: 
+   * In order to run the ResNet20(High level feature) extractor file on cifar10 dataset, the command is as follows: 
       First navigate to directory **resnet20_cifar_10_features**. It takes query image as **resnet20_cifar_10_features/toy_data/airplane_22.png**
       There is 1 input needed for this file to execute.
       1. --stop_at - number of items per folder to extract (optional) defaults to all
 
       `python3 ResNet20FeatureExtractor.py --stop_at <# folder>`
+      
+   * In order to run the ResNet20(High level feature) extractor file on *toy dataset*, the command is as follows: 
+      First navigate to directory **resnet20_cifar_10_features**. If no query image is provided, it takes, one image from toy_data as query.
+      There is 1 input needed for this file to execute.
+      1. --test_image - query image path (optional)
+
+      `python3 resnet_test.py --test_image <query image path>`
+      
+   * In order to run the VGG16ImageNet(High level feature) extractor file on cifar10 dataset, the command is as follows: 
+      First navigate to directory **vgg16_imagenet_features**. It takes query image as **resnet20_cifar_10_features/toy_data/airplane_22.png**
+      There is 1 input needed for this file to execute.
+      1. --stop_at - number of items per folder to extract (optional) defaults to all
+
+      `python3 VGG16FeatureExractor.py --stop_at <# folder>`
+      
+   * In order to run the VGG16ImageNet(High level feature) extractor file on *toy dataset*, the command is as follows: 
+      First navigate to directory **vgg16_imagenet_features**. If no query image is provided, it takes, one image from toy_data as query.
+      There is 1 input needed for this file to execute.
+      1. --test_image - query image path (optional)
+
+      `python3 vgg_test.py --test_image <query image path>`
      
    *  Since the csv file generated are big in size and we are internally using pickle to read the extracted feature vectors, we have uploaded the pre-generated csv files on Google Drive.
       
