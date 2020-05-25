@@ -25,7 +25,7 @@
       
       **On Windows**
       
-      `\env\Scripts\activate.bat`
+      `Scripts\activate.bat`
       
       **The git commands**
       
