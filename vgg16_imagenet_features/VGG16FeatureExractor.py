@@ -1,5 +1,4 @@
 # Extract features from VGG16 CNN mocel
-# Ignore the django.core.exceptions.ImproperlyConfigured error about settings seen when running the main method directly.
 
 import tensorflow as tf
 import os
