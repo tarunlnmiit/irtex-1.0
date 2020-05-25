@@ -93,7 +93,7 @@
       `python3 segmentation.py --path <query image path> --check <# images> --method <0/1>`
       
    * In order to run the ResNet20(High level feature) extractor file on cifar10 dataset, the command is as follows: 
-      First navigate to directory **resnet20_cifar_10_features**. It takes query image as **resnet20_cifar_10_features/toy_data/airplane_22.png**
+      First navigate to directory **resnet20_cifar_10_features**. 
       There is 1 input needed for this file to execute.
       1. --stop_at - number of items per folder to extract (optional) defaults to all
 
@@ -107,7 +107,7 @@
       `python3 resnet_test.py --test_image <query image path>`
       
    * In order to run the VGG16ImageNet(High level feature) extractor file on cifar10 dataset, the command is as follows: 
-      First navigate to directory **vgg16_imagenet_features**. It takes query image as **resnet20_cifar_10_features/toy_data/airplane_22.png**
+      First navigate to directory **vgg16_imagenet_features**. 
       There is 1 input needed for this file to execute.
       1. --stop_at - number of items per folder to extract (optional) defaults to all
 
