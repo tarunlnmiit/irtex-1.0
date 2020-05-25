@@ -83,6 +83,14 @@
      
      If no query image is provided then one image from toy dataset is taken as query.
      
+   * In order to run the SLIC Segmenation file on cifar10 dataset, the command is as follows: 
+      First navigate to directory **segmentaion**. 
+      There are 2 inputs needed for this file to execute.
+      1. --path - query image path which is required
+      2. --check - Number of images per class to compare the query with by default its consider 2
+
+      `python3 slic.py --path <query image path> --check <# images>`
+     
    *  Since the csv file generated are big in size and we are internally using pickle to read the extracted feature vectors, we have uploaded the pre-generated csv files on Google Drive.
       
       [RBSD feature csv](https://drive.google.com/file/d/1Scxi92KdOyhW_-G1DCyGmOFmcqoFaUa2/view?usp=sharing)
