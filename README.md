@@ -35,7 +35,9 @@
       
       `git pull origin milestone2`
   
-  * Run the following command to install the dependencies.
+  * Run the following command to install the dependencies. 
+  
+    **Note:** If windows is the operating system, then C++ compiler is needed and it can be found at https://aka.ms/vs/16/release/VC_redist.x64.exe
 
       `pip install -r requirements.txt`
       
