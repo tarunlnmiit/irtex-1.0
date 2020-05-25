@@ -35,8 +35,8 @@ def threshold(image):
     return gray
 
 
-def slic(image):
-    segments = slic(image, n_segments=10, sigma=2, max_iter=500, convert2lab=True, slic_zero=False,
+def slic_seg(image):
+    segments = slic(image, n_segments=10, sigma=2, max_iter=500, convert2lab=True, slic_zero=False, \
                     compactness=1, enforce_connectivity=True)
     return segments
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     labels = []
     target_names = []
     i = 0
-
+    segments = []
     img_seg = []
 
     for label in tqdm(os.listdir(path_ds)):
@@ -81,10 +81,11 @@ if __name__ == "__main__":
             labels.append(label)
 
             #segments = segmentation(img_array)
-            if method == 0:
+
+            if method == '0':
                 segments = threshold(img_array)
-            elif method == 1:
-                segments = slic(img_array)
+            elif method == '1':
+                segments = slic_seg(img_array)
 
             img_seg.append(segments)
 
@@ -96,10 +97,11 @@ if __name__ == "__main__":
     imgtest = cv2.cvtColor(imgtest, cv2.COLOR_BGR2RGB)
     imgtest = cv2.resize(imgtest, (256, 256))
 
-    if method == 0:
+    segmentstest = []
+    if method == '0':
         segmentstest = threshold(imgtest)
-    elif method == 1:
-        segmentstest = slic(imgtest)
+    elif method == '1':
+        segmentstest = slic_seg(imgtest)
 
     plt.imshow(segmentstest)
     plt.show()
