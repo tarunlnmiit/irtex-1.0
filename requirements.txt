@@ -81,6 +81,7 @@ sklearn==0.0
 scikit-image==0.17.2
 sqlparse==0.2.4
 tensorflow==2.2.0
+tf2cv==0.0.11
 terminado==0.8.3
 testpath==0.4.4
 tornado==6.0.4
