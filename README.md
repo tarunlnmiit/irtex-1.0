@@ -63,7 +63,7 @@
       There is 1 input needed for this file to execute. 
       1. --test-image - query image path
      
-     `python3 cld_test.py --test-image <query image path>`
+     `python3 cld_test.py --test_image <query image path>`
      
      If no query image is provided then one image from toy dataset is taken as query.
 
