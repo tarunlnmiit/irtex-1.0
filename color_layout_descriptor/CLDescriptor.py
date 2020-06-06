@@ -97,7 +97,7 @@ def extract_features(path, output, type):
         pd.to_pickle(df, 'cld.pkl')
 
 
-def get_similarity(query):
+def get_similarity_cld(query):
     feature__path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
     df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
     file_name = df['file_name']
