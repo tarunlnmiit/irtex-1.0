@@ -7,6 +7,8 @@ from region_based_descriptor.RBSDescriptor import RBSDescriptor, NumpyArrayEncod
 from color_layout_descriptor.CLDescriptor import CLDescriptor, get_similarity_cld
 from local_feature_descriptor.orb import ORB, get_similarity_orb
 from local_feature_descriptor.sift import SIFT, get_similarity_sift
+from segmentation.Segmentation_pascal import extract_features_pascal, get_similarity_segmentation_pascal
+from segmentation.NN_segmentation import segmentation_cifar, get_similarity_segmentation_cifar
 from vgg16_imagenet_features.VGG16FeatureExractor import extract_feature_vgg,get_similarity_vgg
 from resnet20_cifar_10_features.ResNet20FeatureExtractor import extract_feature_resnet,get_similarity_resnet
 
@@ -16,12 +18,12 @@ import numpy as np
 import os
 import traceback
 from collections import OrderedDict
+from mxnet import image
 
 
 def getCombinedResults(request, _id):
     try:
         dataset = request.GET.get('dataset', None)
-        dataset = 'cifar'
         if dataset is None:
             response = JsonResponse({
                 'error': 'Dataset not selected'
@@ -37,7 +39,7 @@ def getCombinedResults(request, _id):
 
             final_sim = OrderedDict()
 
-            rbsd = RBSDescriptor()
+            rbsd = RBSDescriptor(dataset)
             img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
             img_array = rbsd.image_preprocessing(img_array)
             q_moment = rbsd.zernike_moments(img_array)
@@ -48,8 +50,22 @@ def getCombinedResults(request, _id):
             img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
             descriptor = cld.compute(img_array).reshape(1, -1)
 
-            sim_cld = get_similarity_cld(descriptor)
+            sim_cld = get_similarity_cld(descriptor, dataset)
             sim_cld.sort(key=lambda x: x['similarity'], reverse=True)
+
+            # Segmentation
+
+            if dataset == 'cifar':
+                img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+                img = cv2.resize(img, (128, 128), interpolation=cv2.INTER_AREA)
+                segmented_query_img = segmentation_cifar(img)
+                sim_segmentation = get_similarity_segmentation_cifar(segmented_query_img)
+            elif dataset == 'pascal':
+                img = image.imread(image_path)
+                segmented_query_img_pca = extract_features_pascal(img)
+                sim_segmentation = get_similarity_segmentation_pascal(segmented_query_img_pca)
+
+            sim_segmentation.sort(key=lambda x: x['similarity'], reverse=True)
 
             if dataset == 'cifar':
                 features = ['SIFT']
@@ -92,6 +108,18 @@ def getCombinedResults(request, _id):
                 else:
                     combined[name]['similarity_list'][1] = item['similarity']
 
+            for item in sim_segmentation:
+                name = item['name']
+                if name not in combined:
+                    combined[name] = {}
+                    combined[name]['name'] = name
+                    combined[name]['url'] = item['url']
+                    combined[name]['label'] = item['label']
+                    combined[name]['similarity_list'] = [0] * 3
+                    combined[name]['similarity_list'][2] = item['similarity']
+                else:
+                    combined[name]['similarity_list'][2] = item['similarity']
+
             for item in sim_local:
                 name = item['name']
                 if name not in combined:
@@ -116,8 +144,9 @@ def getCombinedResults(request, _id):
                 'result': combined[:200],
                 'cld': sim_cld[:200],
                 'rbsd': sim_rbsd[:200],
+                'segmentation': sim_segmentation[:200],
                 'local': sim_local[:200],
-                'features': ['Combined CLD & RBSD', 'CLD', 'RBSD', 'Local']
+                'features': ['Combined CLD & RBSD', 'CLD', 'RBSD', 'Segmentation', 'Local']
             })
     except Exception as e:
         print(traceback.print_exc())
@@ -172,6 +201,47 @@ def getCLDResults(request, _id):
             'result': sim[:200],
             'features': ['CLD']
         })
+    except Exception as e:
+        print(traceback.print_exc())
+        response = JsonResponse({
+            'error': traceback.print_exc()
+        })
+    finally:
+        return response
+
+
+def getSegmentationResults(request, _id):
+    try:
+        dataset = request.GET.get('dataset', None)
+        if dataset is None:
+            response = JsonResponse({
+                'error': 'Dataset not selected'
+            })
+        elif dataset not in ['cifar', 'pascal']:
+            response = JsonResponse({
+                'error': 'Dataset value incorrect'
+            })
+        else:
+            image_instance = QueryImage.objects.get(_id=_id)
+            media_path = os.path.join(settings.BASE_DIR, 'media')
+            image_path = os.path.join(media_path, str(image_instance.file))
+
+            if dataset == 'cifar':
+                img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+                img = cv2.resize(img, (128, 128), interpolation=cv2.INTER_AREA)
+                segmented_query_img = segmentation_cifar(img)
+                sim_segmentation = get_similarity_segmentation_cifar(segmented_query_img)
+            elif dataset == 'pascal':
+                img = image.imread(image_path)
+                segmented_query_img_pca = extract_features_pascal(img)
+                sim_segmentation = get_similarity_segmentation_pascal(segmented_query_img_pca)
+
+            sim_segmentation.sort(key=lambda x: x['similarity'], reverse=True)
+
+            response = JsonResponse({
+                'result': sim_segmentation[:200],
+                'features': ['Segmentation']
+            })
     except Exception as e:
         print(traceback.print_exc())
         response = JsonResponse({
