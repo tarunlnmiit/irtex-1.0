@@ -19,11 +19,14 @@ class NumpyArrayEncoder(JSONEncoder):
 
 
 class RBSDescriptor:
-    def __init__(self):
+    def __init__(self, dataset):
         self.radius = 16
-# Loading of the CSV file
+        self.dataset = dataset
         feature_csv_path = os.path.join(settings.BASE_DIR, 'region_based_descriptor')
-        df = pd.read_pickle(os.path.join(feature_csv_path, 'moments.pkl'))
+        if self.dataset == 'cifar':
+            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments.pkl'))
+        if self.dataset == 'pascal':
+            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal.pkl'))
         self.file_name = df['file_name']
         self.moments = df['moments']
         self.moments = self.moments.tolist()
@@ -31,11 +34,15 @@ class RBSDescriptor:
 
 # Calculate similarity between the query image and extracted feature and converting it into json format
     def similarity(self, query):
-        q_sim = []
         q_sim = cosine_similarity(self.moments, query)
-        json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
-                      'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
-        # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
+        if self.dataset == 'cifar':
+            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
+                          'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
+            # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
+        if self.dataset == 'pascal':
+            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
+                          'url': '/media/voc/{}/{}'.format(self.labels[i], self.file_name[i])} for i in
+                         range(len(q_sim))]
 
         return json_qsim
 
