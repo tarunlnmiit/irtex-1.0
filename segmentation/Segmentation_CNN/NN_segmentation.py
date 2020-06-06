@@ -1,27 +1,36 @@
 #%matplotlib inline
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
-from PIL import Image
 import argparse
-from torch import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import torch.nn.init
+import sys
+import os
+import scipy.io as sio
+import matplotlib.image as image
+
+from PIL import Image
+from os import path
+from PIL import Image
+from tqdm import tqdm
+from torch import torch
 from torchvision import datasets, transforms
 from torch.autograd import Variable
-#import cv2
-import sys
 from skimage import segmentation
-import torch.nn.init
 from cv2 import cv2
-import os
-import matplotlib.pyplot as plt
-import numpy as np
-import cv2
 from skimage.measure import compare_ssim as ssim
 from sklearn.metrics.cluster import adjusted_rand_score
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import normalize
 
-#load input data CIFAR 
+code='cifar_segment'
+n_components=5
+pca = PCA(n_components=n_components)  #decided after empherical testing
+
+#load input dataset CIFAR for Segmentation
 def Load_data(dataFile):
     #print("load datafile started")
     image_array=[]
@@ -40,8 +49,8 @@ def Load_data(dataFile):
             img_cat.append(img_read)
             img_cat.append(label)
             image_array.append(img_cat)
-            # if(count==1):
-            #     break
+            if(count==500):
+                break
     return image_array
 
 #CNN model architecture (Conv + BatchNormalisation + Conv + BatchNormalisation)--> Initial Conv layer
@@ -82,22 +91,20 @@ def Segmentation(image):
 
         #hyperparameters initialisation
         nChannel=5
-        maxIter= 500
-        min_clusters= 3   
+        maxIter= 300
+        min_clusters= 2   
         lr=0.1
         nConv=3
-        num_superpixels= 1000
-        compactness= 50
+        num_superpixels= 800
+        compactness= 100
         visualize= 1 
     
-        print("Segmentation started")
-        #image_res= cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
-        
+        #print("Segmentation started")
+    
         #Input Image provided for Segmentation
         
-        cv2.imshow( "input", image )
-        cv2.waitKey(10)
-        #plt.imshow(image)
+        # cv2.imshow( "input", image )
+        # cv2.waitKey(10)
                 
         data = torch.from_numpy( np.array([image.transpose( (2, 0, 1) ).astype('float32')/255.]) )
         
@@ -133,8 +140,8 @@ def Segmentation(image):
                 im_target_rgb = np.array([label_colours[ c % 100 ] for c in im_target])
                 im_target_rgb = im_target_rgb.reshape( image.shape ).astype( np.uint8 )
                 #im_target_rgb_res= cv2.resize(im_target_rgb, dim, interpolation = cv2.INTER_AREA)
-                cv2.imshow( "output", im_target_rgb )
-                cv2.waitKey(10)
+                # cv2.imshow( "output", im_target_rgb )
+                # cv2.waitKey(10)
                 
 
             # superpixel refinement
@@ -156,71 +163,105 @@ def Segmentation(image):
         
         
         #Show Segmented Image after total iterations or minimum clusters are reached 
-        cv2.imshow("Segmented image", im_target_rgb)
-        cv2.waitKey(10)
-        #plt.imshow (im_target_rgb)
+        # cv2.imshow("Segmented image", im_target_rgb)
+        # cv2.waitKey(10)
+        
         return (im_target_rgb)
 
 #Function initialising segmentation
 def start_segmentation(image_array):
-    segmented=[]
+    feature_list = []
     count=0
+
+    #path where the segmented masks got saved 
+    save_path='C:\\Users\\Gurpreet\\Desktop\\python\\IRTEX-Segmentation\\irtex-1.0\\segmentation\\Segmentation_CNN\\segmented_mask_cifar\\'
     print("Starting segmentation")
     for i in range(len(image_array)):
-
         image=image_array[i][1]
+        image_name = image_array[i][0]
 
-        im=Segmentation(image)
+        segmented_img=Segmentation(image) #segmentation of image 
 
-        segmented.append(im)
+        #### Storing Mask for segmented image  #######
+        im = segmented_img
+        im=Image.fromarray(np.uint8(im)).convert('RGB')
+        name,extension=path.splitext(image_name)
+        im.save(save_path+name+'.png') #Storing images as Pil Image in the file location
+
+        ########## PCA ############
+        segmented_img = np.resize(segmented_img,(128,128))
+        segmented_img = np.array(segmented_img)
+        segmented_img_norm = normalize(segmented_img)
+        segmented_img_pca = pca.fit_transform(segmented_img_norm)
         
-    return segmented
+        segmented_img_pca=segmented_img_pca.flatten() #1d array for the segmented image
+
+        row = [image_name,segmented_img_pca,image_array[i][2]]
+        feature_list.append(row)
+        count=count+1
+        if(count==10):
+            break
+    df = pd.DataFrame(feature_list, columns=["file_name", code ,"label"])
+    pd.to_pickle(df, code+'.pkl')
 
 #Function to compute similarity
-def Similarity(segmented_images,segmented_query_img,image_array):
+def Similarity(segmented_query_img):
     similarity=[]
 
-    for i in range(len(segmented_images)):
-        compared=[]
-        image=(segmented_images[i])
-       # sim = ssim(segmented_query_img, image,multichannel=True)
-        score = adjusted_rand_score(segmented_query_img.flatten(),image.flatten())
-        #print (i,sim,"  ")
-        compared.append(image_array[i][0])
-        compared.append(score)
-        similarity.append(compared)
+    path='C:\\Users\\Gurpreet\Desktop\\python\\IRTEX-Segmentation\\irtex-1.0\\segmentation\\Segmentation_CNN'
+    df = pd.read_pickle(os.path.join(path,code+'.pkl'))
+
+    file_name = df['file_name']
+    features = df[code]
+    labels = df['label']
+
+    for iter in range(len(features)):
+                
+        #sim_ssim = ssim(segmented_query_img.reshape(128,n_components), features[i].reshape(128,n_components),multichannel=True)
+        sim_ari = adjusted_rand_score(segmented_query_img,features[iter])
+    
+        row=[file_name[iter],sim_ari,labels[iter]]
+        similarity.append(row)
+    
     return similarity
 
 
 #Inputs , segmentation , query image and similarity computation calls 
 
+if __name__ == "__main__":    
+    parser = argparse.ArgumentParser(description='CNN Segmentation on CIFAR')
+    
+    parser.add_argument('--path', help='path to query image', required=True)
+    args = parser.parse_args()
+    query_path = args.path
 
-dataFile="C:\\Users\\Gurpreet\\Desktop\\python\\IRTEX-Segmentation\\media\\cifar10"
-# dataFile = os.path.join(settings.BASE_DIR, 'media', 'cifar10')
-# dataFile = os.path.join(dataFile)
+    # #Segment CIFAR dataset and save masks and feature vector in pickle 
+    # dataFile="C:\\Users\\Gurpreet\\Desktop\\python\\IRTEX-Segmentation\\media\\cifar10"
+    # loaded_data=Load_data(dataFile)
+    # print("dataset Loaded")
+    # segmented_images = start_segmentation(loaded_data) 
+    # print("segmentation done")
 
-loaded_data=Load_data(dataFile)
-print("dataset Loaded")
+    query_img = cv2.imread(query_path, cv2.IMREAD_UNCHANGED)
+    query_img = cv2.resize(query_img, (128,128), interpolation = cv2.INTER_AREA)
+    segmented_query_img = Segmentation(query_img)
 
-#Call function to start segmentation
-segmented_images = start_segmentation(loaded_data) 
-print("segmentation done")
+    #PCA transformation of query image 
+    segmented_query_img = np.resize(segmented_query_img,(128,128))
+    segmented_query_img = np.array(segmented_query_img)
+    segmented_query_img_norm = normalize(segmented_query_img)
+    segmented_query_img = pca.fit_transform(segmented_query_img_norm)
+        
+    segmented_query_img=segmented_query_img.flatten()
+    
+    #compute similarity of query image and CIFAR images 
+    similarity=Similarity(segmented_query_img)
 
-#Take Input from user for query Image (query path)
-#Hard coded for now
-path ="C:\\Users\\Gurpreet\\Desktop\\python\\IRTEX-Segmentation\\media\\cifar10\\airplane\\airplane_1013.png"
-dim=(128,128)   
-queryimage = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-queryimage = cv2.resize(queryimage, dim, interpolation = cv2.INTER_AREA)
-segmented_query_img=Segmentation(queryimage)
-
-# Compute similarity between segmented images and query image
-
-similarity= Similarity (segmented_images,segmented_query_img,loaded_data)
-similarity= sorted(similarity,key=lambda similarity: similarity[1],reverse=True)
+    #sorting based on ARI score 
+    similarity= sorted(similarity,key=lambda similarity: similarity[1],reverse=True)
 
 
-# Display results based on similarity
-print("Results based on similarity")
-for i in range (len(similarity)):
-    print("File : ",similarity[i][0],"  Similarity : ",similarity[i][1])
+    # # Display results based on similarity
+    # print("Results based on similarity")
+    # for i in range (len(similarity)):
+    #     print("File : ",similarity[i][0],"  Similarity : ",similarity[i][1],"   Label : ",similarity[i][2])
