@@ -31,8 +31,8 @@ def extract_feature_resnet(query_image_path):
     img = resize(img, (image_size, image_size))
     img = tf.expand_dims(img, 0)
     feature = model(img)
-    sm = tf.nn.softmax(feature)
-    return sm.numpy().reshape(-1)
+    #sm = tf.nn.softmax(feature)
+    return feature.numpy().reshape(-1)
 
 
 def get_similarity_resnet(query, _path=''):
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     stop_at = args.stop_at
     if not stop_at:
-        stop_at = 10
+        stop_at = -1
 
     path = '../media/cifar10'
     feature_list = []
