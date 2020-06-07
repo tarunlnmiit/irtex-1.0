@@ -61,7 +61,12 @@ class RBSDescriptor:
 
 # Calculating the zernike moments of query image
     def zernike_moments(self, image):
-        query_moment = mahotas.features.zernike_moments(image, self.radius).reshape(1, -1)
+        if self.dataset =='cifar':
+            degree = 16
+        if self.dataset =='pascal':
+            degree = 20
+
+        query_moment = mahotas.features.zernike_moments(image, self.radius, degree=degree).reshape(1, -1)
         #To perform PCA on query image
         query_moment = self.pca.transform(query_moment)
         return query_moment
