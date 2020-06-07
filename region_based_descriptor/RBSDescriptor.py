@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import pickle
 import json
+from sklearn.decomposition import PCA
 from json import JSONEncoder
 
 # For JSON Encoding
@@ -24,13 +25,25 @@ class RBSDescriptor:
         self.dataset = dataset
         feature_csv_path = os.path.join(settings.BASE_DIR, 'region_based_descriptor')
         if self.dataset == 'cifar':
-            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments.pkl'))
+            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar.pkl'))
+            #To perform PCA on query image
+            df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar_16.pkl'))
+            n_comp = 15
         if self.dataset == 'pascal':
             df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal.pkl'))
+            # To perform PCA on query image
+            df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal_20.pkl'))
+            n_comp = 20
         self.file_name = df['file_name']
         self.moments = df['moments']
         self.moments = self.moments.tolist()
         self.labels = df['label']
+
+        # To perform PCA on query image
+        self.og_moments = df_temp['moments']
+        self.og_moments = self.og_moments.tolist()
+        self.pca = PCA(n_components=n_comp)
+        self.pca.fit_transform(self.og_moments)
 
 # Calculate similarity between the query image and extracted feature and converting it into json format
     def similarity(self, query):
@@ -48,7 +61,10 @@ class RBSDescriptor:
 
 # Calculating the zernike moments of query image
     def zernike_moments(self, image):
-        return mahotas.features.zernike_moments(image, self.radius).reshape(1, -1)
+        query_moment = mahotas.features.zernike_moments(image, self.radius).reshape(1, -1)
+        #To perform PCA on query image
+        query_moment = self.pca.transform(query_moment)
+        return query_moment
 
 # For textual explanation
     def textual_explanation(self):
