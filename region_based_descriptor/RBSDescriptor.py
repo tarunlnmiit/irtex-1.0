@@ -78,7 +78,10 @@ class RBSDescriptor:
 # Pre-processing the query image so as to match extracted features
     def image_preprocessing(self, image):
         img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        img = cv2.resize(img, (32, 32))
+        if self.dataset == 'cifar':
+            img = cv2.resize(img, (32, 32))
+        if self.dataset == 'pascal':
+            img = cv2.resize(img, (256, 256))
         # img = img + np.random.normal(scale=2, size=img.shape)
         return img
 
