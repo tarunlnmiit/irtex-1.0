@@ -112,7 +112,7 @@ def get_similarity_segmentation_pascal(segmented_query_img_pca):
         sim_ssim = ssim(segmented_query_img_pca.reshape(128, 2), features[iter].reshape(128, 2), multichannel=True)
         # sim_ari = adjusted_rand_score(segmented_query_img,features[i])
 
-        #Normalise ssim similarity between 0 and 1
+        ##Normalise ssim similarity between 0 and 1
         sim_ssim = ((1 + sim_ssim)/2)
 
         for label in labels[iter]:
