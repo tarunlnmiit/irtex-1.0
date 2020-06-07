@@ -43,3 +43,10 @@ iretx/__pycache__/
 /local_feature_descriptor/VOC data prep.ipynb
 /local_feature_descriptor/.ipynb_checkpoints/
 /color_layout_descriptor/cld.csv
+/resnet_features/.ipynb_checkpoints/
+/resnet_features/Untitled.ipynb
+/local_feature_descriptor/sift_pickle/sift_final.pkl
+/local_feature_descriptor/orb_final.pkl
+/resnet_features/deeplab_pascal_all.pkl
+/resnet20_cifar_10_features/Untitled.ipynb
+/resnet20_cifar_10_features/.ipynb_checkpoints/Untitled-checkpoint.ipynb
