@@ -66,7 +66,7 @@ def get_similarity_deeplab(query, _path=''):
     image_files_path = '../media/pascal'
     if _path is not '':
         features_path = os.path.join(_path, 'deeplab3_resnet_descriptor',feature_file+'.pkl')
-        image_files_path = os.path.join(_path, 'pascal')
+        image_files_path = os.path.join(_path, 'media/pascal')
 
     df = pd.read_pickle(features_path)
 
@@ -74,7 +74,7 @@ def get_similarity_deeplab(query, _path=''):
     present_local_pascal_files = os.listdir(image_files_path)
     df = df[df['file_name'].isin(present_local_pascal_files)]
 
-    file_name = df['file_name']
+    file_name = df['file_name'].tolist()
     features = df['descriptor'].tolist()
     features = np.array(features)
     features = features[:,1:-2]
