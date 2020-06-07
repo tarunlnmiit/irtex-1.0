@@ -115,14 +115,7 @@ def get_similarity_dataframe(i,query):
     return get_similarity_euclidean(i,query)
 
 
-def get_similarity(query,dataset):
-    feature__path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
 
-    if dataset == 'cifar':
-        df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
-    if dataset == 'pascal':
-        df = pd.read_pickle(os.path.join(feature__path, 'cld_pascal.pkl'))
-    df['similarity'] = df.cld.apply(get_similarity_dataframe, args=[query])
 
 def get_similarity_cld(query, dataset):
     feature__path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
