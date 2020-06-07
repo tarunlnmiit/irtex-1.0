@@ -25,7 +25,7 @@ class CLDescriptor:
         for row in range(self.rows):
             for col in range(self.cols):
                 slice = img[imgH // self.rows * row: imgH // self.rows * (row + 1),
-                            imgW // self.cols * col: imgW // self.cols * (col + 1)]
+                        imgW // self.cols * col: imgW // self.cols * (col + 1)]
                 average_color_per_row = np.mean(slice, axis=0)
                 average_color = np.mean(average_color_per_row, axis=0)
                 average_color = np.uint8(average_color)
@@ -67,7 +67,6 @@ def read_image(path):
 
 
 def extract_features(path, output, type):
-
     fileList = os.listdir(path)
     print('extracting cld for {} images'.format(len(fileList)))
 
@@ -88,14 +87,13 @@ def extract_features(path, output, type):
         out_file = os.path.join(output, 'cld.csv')
 
         with open(out_file, 'wt') as file:
-            writer = csv.writer(file, delimiter=',',  lineterminator='\n')
+            writer = csv.writer(file, delimiter=',', lineterminator='\n')
             writer.writerows([["file_name", "cld", "label"]])
             writer.writerows(feature_list)
             file.close()
     else:
         df = pd.DataFrame(feature_list, columns=["file_name", "cld", "label"])
         pd.to_pickle(df, 'cld.pkl')
-
 
 
 def get_similarity_euclidean(descriptor1, descriptor2):
@@ -111,10 +109,8 @@ def get_similarity_euclidean(descriptor1, descriptor2):
     return sum / 3
 
 
-def get_similarity_dataframe(i,query):
-    return get_similarity_euclidean(i,query)
-
-
+def get_similarity_dataframe(i, query):
+    return get_similarity_euclidean(i, query)
 
 
 def get_similarity_cld(query, dataset):
@@ -127,25 +123,21 @@ def get_similarity_cld(query, dataset):
     file_name = df['file_name']
     labels = df['label']
 
-
-
-    #cld = df['cld'].tolist()
-    #q_sim = cosine_similarity(cld, query)
-    #json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
+    # cld = df['cld'].tolist()
+    # q_sim = cosine_similarity(cld, query)
+    # json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
     #              'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
 
     df['similarity'] = df.cld.apply(get_similarity_dataframe, args=[query])
 
     q_sim = df['similarity']
 
-
     if dataset == 'cifar':
-        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
+        json_qsim = [{'name': file_name[i], 'similarity': 1.0 - q_sim[i], 'label': labels[i],
                       'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
     if dataset == 'pascal':
-        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
+        json_qsim = [{'name': file_name[i], 'similarity': 1.0 - q_sim[i], 'label': labels[i],
                       'url': '/media/voc/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
-
 
     return json_qsim
 
@@ -163,9 +155,9 @@ if __name__ == "__main__":
     type = args.type
 
     if type is None or type not in ['csv', 'pkl']:
-        print('='*10)
+        print('=' * 10)
         print('Invalid output type provided. It should be csv or pkl')
-        print('='*10)
+        print('=' * 10)
         exit(0)
     else:
         extract_features(path, output, type)
