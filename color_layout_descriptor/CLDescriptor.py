@@ -97,6 +97,7 @@ def extract_features(path, output, type):
         pd.to_pickle(df, 'cld.pkl')
 
 
+
 def get_similarity_euclidean(descriptor1, descriptor2):
     descriptor1 = descriptor1.reshape(-1, 64)
     descriptor2 = descriptor2.reshape(-1, 64)
@@ -114,12 +115,25 @@ def get_similarity_dataframe(i,query):
     return get_similarity_euclidean(i,query)
 
 
-def get_similarity(query):
+def get_similarity(query,dataset):
     feature__path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
-    df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
+
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
+    if dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(feature__path, 'cld_pascal.pkl'))
     df['similarity'] = df.cld.apply(get_similarity_dataframe, args=[query])
+
+def get_similarity_cld(query, dataset):
+    feature__path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
+    if dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(feature__path, 'cld_pascal.pkl'))
+
     file_name = df['file_name']
     labels = df['label']
+
 
 
     #cld = df['cld'].tolist()
@@ -127,12 +141,18 @@ def get_similarity(query):
     #json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
     #              'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
 
+    df['similarity'] = df.cld.apply(get_similarity_dataframe, args=[query])
+
     q_sim = df['similarity']
 
 
+    if dataset == 'cifar':
+        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
+                      'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+    if dataset == 'pascal':
+        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
+                      'url': '/media/voc/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
 
-    json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
-                  'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
 
     return json_qsim
 

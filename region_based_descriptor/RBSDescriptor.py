@@ -8,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import pickle
 import json
+from sklearn.decomposition import PCA
 from json import JSONEncoder
 
 # For JSON Encoding
@@ -19,29 +20,56 @@ class NumpyArrayEncoder(JSONEncoder):
 
 
 class RBSDescriptor:
-    def __init__(self):
+    def __init__(self, dataset):
         self.radius = 16
-# Loading of the CSV file
+        self.dataset = dataset
         feature_csv_path = os.path.join(settings.BASE_DIR, 'region_based_descriptor')
-        df = pd.read_pickle(os.path.join(feature_csv_path, 'moments.pkl'))
+        if self.dataset == 'cifar':
+            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar.pkl'))
+            #To perform PCA on query image
+            df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar_16.pkl'))
+            n_comp = 15
+        if self.dataset == 'pascal':
+            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal.pkl'))
+            # To perform PCA on query image
+            df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal_20.pkl'))
+            n_comp = 20
         self.file_name = df['file_name']
         self.moments = df['moments']
         self.moments = self.moments.tolist()
         self.labels = df['label']
 
+        # To perform PCA on query image
+        self.og_moments = df_temp['moments']
+        self.og_moments = self.og_moments.tolist()
+        self.pca = PCA(n_components=n_comp)
+        self.pca.fit_transform(self.og_moments)
+
 # Calculate similarity between the query image and extracted feature and converting it into json format
     def similarity(self, query):
-        q_sim = []
         q_sim = cosine_similarity(self.moments, query)
-        json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
-                      'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
-        # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
+        if self.dataset == 'cifar':
+            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
+                          'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
+            # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
+        if self.dataset == 'pascal':
+            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
+                          'url': '/media/voc/{}/{}'.format(self.labels[i], self.file_name[i])} for i in
+                         range(len(q_sim))]
 
         return json_qsim
 
 # Calculating the zernike moments of query image
     def zernike_moments(self, image):
-        return mahotas.features.zernike_moments(image, self.radius).reshape(1, -1)
+        if self.dataset =='cifar':
+            degree = 16
+        if self.dataset =='pascal':
+            degree = 20
+
+        query_moment = mahotas.features.zernike_moments(image, self.radius, degree=degree).reshape(1, -1)
+        #To perform PCA on query image
+        query_moment = self.pca.transform(query_moment)
+        return query_moment
 
 # For textual explanation
     def textual_explanation(self):
