@@ -1,7 +1,10 @@
+from django.conf import settings
+
 from tf2cv.model_provider import get_model as tf2cv_get_model
 import tensorflow as tf
 import cv2
 from skimage.transform import resize
+import numpy as np
 import pandas as pd
 import os
 from sklearn.metrics.pairwise import cosine_similarity
@@ -35,22 +38,33 @@ def extract_feature_resnet(query_image_path):
     return feature.numpy().reshape(-1)
 
 
-def get_similarity_resnet(query, _path=''):
-    query = query.reshape(1, -1)
-
-    features_path = code + '.pkl'
-    if _path is not '':
-        features_path = os.path.join(_path, 'resnet20_cifar_10_features',code+'.pkl')
-
-    df = pd.read_pickle(features_path)
+def get_similarity_resnet(query, dataset):
+    feature_csv_path = os.path.join(settings.BASE_DIR, 'resnet_features')
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(feature_csv_path, 'cifar_resnet_logits.pkl'))
+    if dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(feature_csv_path, 'deeplab_pascal.pkl'))
 
     file_name = df['file_name']
-    features = df[code].tolist()
+    features = df['resnet'].tolist()
     labels = df['label']
 
     q_sim = cosine_similarity(features, query)
-    json_qsim = [{'name': file_name[i], 'similarity': str(q_sim[i][0]), 'label': labels[i],
-                  'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+    json_qsim = []
+    if dataset == 'cifar':
+        for i in range(len(q_sim)):
+            for label in labels[i]:
+                row = {'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': label,
+                          'url': '/media/cifar10/{}/{}'.format(label, file_name[i])}
+
+                json_qsim.append(row)
+    if dataset == 'pascal':
+        for i in range(len(q_sim)):
+            for label in labels[i]:
+                row = {'name': file_name[i], 'similarity': q_sim[i][0], 'label': label,
+                       'url': '/media/voc/{}/{}'.format(label, file_name[i])}
+
+                json_qsim.append(row)
 
     return json_qsim
 
