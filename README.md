@@ -4,12 +4,13 @@
 
 ## This is the working Scientific project about an Image Retrieval Engine
 
-> The project currently consists of 5 branches:
+> The project currently consists of 6 branches:
   1. master - production code ready
   2. develop - development merge of all feature branches
   3. server - feature branch for web server in Django
   4. retrieval-engine - feature branch for image retrieval engine using ML/DL/IR approaches
   5. milestone2 - deliverable branch for milestone 2.
+  6. milestone3 - deliverable branch for milestone 3.
   
 > The application can be initiated in the following manner but it has some prerequisites.
 
@@ -35,7 +36,7 @@
       
       `git checkout milestone2`
       
-      `git pull origin milestone2`
+      `git pull origin milestone3`
   
   * Run the following command to install the dependencies. 
 
