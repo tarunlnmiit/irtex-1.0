@@ -28,3 +28,9 @@ class QueryImageSimilarity(models.Model):
     query_image_id = models.CharField(max_length=128, null=False, blank=False)
     similarities = models.ListField()
     created = models.DateTimeField(auto_now_add=True)
+
+
+class Session(models.Model):
+    _id = models.ObjectIdField()
+    clicks = models.DictField(null=True)
+    created = models.DateTimeField(auto_now_add=True)

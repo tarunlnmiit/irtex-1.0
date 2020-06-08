@@ -19,3 +19,34 @@ iretx/__pycache__/
 /media/
 /color_layout_descriptor/Untitled.ipynb
 /color_layout_descriptor/.ipynb_checkpoints/
+/local_feature_descriptor/feature-detection/
+/local_feature_descriptor/sift_pickle/cifar/
+/local_feature_descriptor/sift_pickle/pascal/
+/local_feature_descriptor/sift_pickle/wang/
+/local_feature_descriptor/orb_pickle/cifar/
+/local_feature_descriptor/orb_pickle/pascal/
+/local_feature_descriptor/orb_pickle/wang/
+/local_feature_descriptor/ex_ds/wang/
+/local_feature_descriptor/empirical_combined/
+/local_feature_descriptor/combined_pickle/
+/local_feature_descriptor/empirical_combined/
+/local_feature_descriptor/combined_pickle/
+/local_feature_descriptor/empirical_combined.py
+/local_feature_descriptor/Feature Matching.ipynb
+/local_feature_descriptor/Harris Corner.ipynb
+/local_feature_descriptor/KAZE.ipynb
+/local_feature_descriptor/ORB_old.ipynb
+/local_feature_descriptor/orb_test.py
+/local_feature_descriptor/sift.csv
+/local_feature_descriptor/SIFT and ORB Feature extractor.ipynb
+/local_feature_descriptor/Untitled.ipynb
+/local_feature_descriptor/VOC data prep.ipynb
+/local_feature_descriptor/.ipynb_checkpoints/
+/color_layout_descriptor/cld.csv
+/resnet_features/.ipynb_checkpoints/
+/resnet_features/Untitled.ipynb
+/local_feature_descriptor/sift_pickle/sift_final.pkl
+/local_feature_descriptor/orb_final.pkl
+/resnet_features/deeplab_pascal_all.pkl
+/resnet20_cifar_10_features/Untitled.ipynb
+/resnet20_cifar_10_features/.ipynb_checkpoints/Untitled-checkpoint.ipynb

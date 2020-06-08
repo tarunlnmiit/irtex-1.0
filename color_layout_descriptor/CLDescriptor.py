@@ -25,7 +25,7 @@ class CLDescriptor:
         for row in range(self.rows):
             for col in range(self.cols):
                 slice = img[imgH // self.rows * row: imgH // self.rows * (row + 1),
-                            imgW // self.cols * col: imgW // self.cols * (col + 1)]
+                        imgW // self.cols * col: imgW // self.cols * (col + 1)]
                 average_color_per_row = np.mean(slice, axis=0)
                 average_color = np.mean(average_color_per_row, axis=0)
                 average_color = np.uint8(average_color)
@@ -67,7 +67,6 @@ def read_image(path):
 
 
 def extract_features(path, output, type):
-
     fileList = os.listdir(path)
     print('extracting cld for {} images'.format(len(fileList)))
 
@@ -88,7 +87,7 @@ def extract_features(path, output, type):
         out_file = os.path.join(output, 'cld.csv')
 
         with open(out_file, 'wt') as file:
-            writer = csv.writer(file, delimiter=',',  lineterminator='\n')
+            writer = csv.writer(file, delimiter=',', lineterminator='\n')
             writer.writerows([["file_name", "cld", "label"]])
             writer.writerows(feature_list)
             file.close()
@@ -97,17 +96,48 @@ def extract_features(path, output, type):
         pd.to_pickle(df, 'cld.pkl')
 
 
-def get_similarity(query):
+def get_similarity_euclidean(descriptor1, descriptor2):
+    descriptor1 = descriptor1.reshape(-1, 64)
+    descriptor2 = descriptor2.reshape(-1, 64)
+    dist = 0
+    sum = 0
+    for i, layer in enumerate(descriptor1):
+        dist = np.linalg.norm(descriptor1[i] - descriptor2[i])
+        sum += (1 / (1 + dist))
+        # print(i, (1/(1+dist)))
+
+    return sum / 3
+
+
+def get_similarity_dataframe(i, query):
+    return get_similarity_euclidean(i, query)
+
+
+def get_similarity_cld(query, dataset):
     feature__path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
-    df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
+    if dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(feature__path, 'cld_pascal.pkl'))
+
     file_name = df['file_name']
-    cld = df['cld'].tolist()
     labels = df['label']
 
-    q_sim = cosine_similarity(cld, query)
+    # cld = df['cld'].tolist()
+    # q_sim = cosine_similarity(cld, query)
+    # json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
+    #              'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
 
-    json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
-                  'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+    df['similarity'] = df.cld.apply(get_similarity_dataframe, args=[query])
+
+    q_sim = df['similarity']
+
+    if dataset == 'cifar':
+        json_qsim = [{'name': file_name[i], 'similarity': 1.0 - q_sim[i], 'label': labels[i],
+                      'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+    if dataset == 'pascal':
+        json_qsim = [{'name': file_name[i], 'similarity': 1.0 - q_sim[i], 'label': labels[i],
+                      'url': '/media/voc/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
 
     return json_qsim
 
@@ -125,9 +155,9 @@ if __name__ == "__main__":
     type = args.type
 
     if type is None or type not in ['csv', 'pkl']:
-        print('='*10)
+        print('=' * 10)
         print('Invalid output type provided. It should be csv or pkl')
-        print('='*10)
+        print('=' * 10)
         exit(0)
     else:
         extract_features(path, output, type)
