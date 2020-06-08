@@ -1,12 +1,13 @@
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.core import files
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser, FileUploadParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from .models import QueryImage
+from .models import QueryImage, Session
 from .serializers import QueryImageSerializer
 
 import os
@@ -74,3 +75,12 @@ class QueryImageUploadView(APIView):
     #         return JsonResponse({
     #             'message': 'No ID received'
     #         })
+
+@csrf_exempt
+def sessionStart(request):
+    session = Session()
+    session.clicks = {}
+    session.save()
+    return JsonResponse({
+        '_id': str(session._id)
+    })
