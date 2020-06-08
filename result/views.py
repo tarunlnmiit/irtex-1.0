@@ -11,6 +11,7 @@ from segmentation.Segmentation_pascal import extract_features_pascal, get_simila
 from segmentation.NN_segmentation import segmentation_cifar, get_similarity_segmentation_cifar
 from vgg16_imagenet_features.VGG16FeatureExractor import extract_feature_vgg,get_similarity_vgg
 from resnet_features.ResNet20FeatureExtractor import extract_feature_resnet, get_similarity_resnet
+from deeplab3_resnet_descriptor.DeepLabResnetSegmentation import extract_feature_deeplab
 
 import cv2
 import json
@@ -34,6 +35,11 @@ def getCombinedResults(request, _id):
                 'error': 'Dataset value incorrect'
             })
         else:
+            if dataset == 'cifar':
+                weights = [1.15, 1.0, 1.0, 3.1]
+            if dataset == 'pascal':
+                weights = [1.05, 1.0, 1.05, 3.4]
+
             image_instance = QueryImage.objects.get(_id=_id)
             media_path = os.path.join(settings.BASE_DIR, 'media')
             image_path = os.path.join(media_path, str(image_instance.file))
@@ -70,34 +76,41 @@ def getCombinedResults(request, _id):
             # Resnet
             if dataset == 'cifar':
                 df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/cifar_resnet_logits.pkl'))
+                if len(str(image_instance.file).split('_')) > 2:
+                    file_name = '_'.join(str(image_instance.file).split('_')[:2]) + '.png'
+                else:
+                    file_name = image_instance.file
+                descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
             elif dataset == 'pascal':
                 df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/deeplab_pascal.pkl'))
+                # descriptor = df.loc[df['file_name'] == image_instance.file].iloc[0, 1][1:-2].reshape(1, -1)
+                descriptor = extract_feature_deeplab(image_path)
 
-            descriptor = df.loc[df['file_name'] == image_instance.file].iloc[0, 1].reshape(1, -1)
             sim_resnet = get_similarity_resnet(descriptor, dataset)
 
             sim_resnet.sort(key=lambda x: x['similarity'], reverse=True)
 
             # Local
-            if dataset == 'cifar':
-                features = ['SIFT']
-                sift = SIFT()
-                img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-                descriptor = sift.compute(img_array, 16, None).reshape(1, -1)
-
-                sim_local = get_similarity_sift(descriptor)
-                # sim_local.sort(key=lambda x: x['similarity'], reverse=True)
-            elif dataset == 'pascal':
-                features = ['ORB']
-                orb = ORB()
-                img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-                descriptor = orb.compute(img_array, 16, 8).reshape(1, -1)
-
-                sim_local = get_similarity_orb(descriptor)
-
-            sim_local.sort(key=lambda x: x['similarity'], reverse=True)
+            # if dataset == 'cifar':
+            #     features = ['SIFT']
+            #     sift = SIFT()
+            #     img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+            #     descriptor = sift.compute(img_array, 16, None).reshape(1, -1)
+            #
+            #     sim_local = get_similarity_sift(descriptor)
+            #     # sim_local.sort(key=lambda x: x['similarity'], reverse=True)
+            # elif dataset == 'pascal':
+            #     features = ['ORB']
+            #     orb = ORB()
+            #     img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+            #     descriptor = orb.compute(img_array, 16, 8).reshape(1, -1)
+            #
+            #     sim_local = get_similarity_orb(descriptor)
+            #
+            # sim_local.sort(key=lambda x: x['similarity'], reverse=True)
 
             combined = {}
+            len_features = 4
 
             for item in sim_cld:
                 name = item['name']
@@ -105,7 +118,7 @@ def getCombinedResults(request, _id):
                 combined[name]['name'] = name
                 combined[name]['url'] = item['url']
                 combined[name]['label'] = item['label']
-                combined[name]['similarity_list'] = [0] * 5
+                combined[name]['similarity_list'] = [0] * len_features
                 combined[name]['similarity_list'][0] = item['similarity']
 
             for item in sim_rbsd:
@@ -115,7 +128,7 @@ def getCombinedResults(request, _id):
                     combined[name]['name'] = name
                     combined[name]['url'] = item['url']
                     combined[name]['label'] = item['label']
-                    combined[name]['similarity_list'] = [0] * 5
+                    combined[name]['similarity_list'] = [0] * len_features
                     combined[name]['similarity_list'][1] = item['similarity']
                 else:
                     combined[name]['similarity_list'][1] = item['similarity']
@@ -127,7 +140,7 @@ def getCombinedResults(request, _id):
                     combined[name]['name'] = name
                     combined[name]['url'] = item['url']
                     combined[name]['label'] = item['label']
-                    combined[name]['similarity_list'] = [0] * 5
+                    combined[name]['similarity_list'] = [0] * len_features
                     combined[name]['similarity_list'][2] = item['similarity']
                 else:
                     combined[name]['similarity_list'][2] = item['similarity']
@@ -139,25 +152,41 @@ def getCombinedResults(request, _id):
                     combined[name]['name'] = name
                     combined[name]['url'] = item['url']
                     combined[name]['label'] = item['label']
-                    combined[name]['similarity_list'] = [0] * 5
+                    combined[name]['similarity_list'] = [0] * len_features
                     combined[name]['similarity_list'][3] = item['similarity']
                 else:
                     combined[name]['similarity_list'][3] = item['similarity']
+                    if dataset == 'pascal':
+                        combined[name]['label'] = item['label']
 
-            for item in sim_local:
-                name = item['name']
-                if name not in combined:
-                    combined[name] = {}
-                    combined[name]['name'] = name
-                    combined[name]['url'] = item['url']
-                    combined[name]['label'] = item['label']
-                    combined[name]['similarity_list'] = [0] * 5
-                    combined[name]['similarity_list'][4] = item['similarity']
-                else:
-                    combined[name]['similarity_list'][4] = item['similarity']
+            # for item in sim_local:
+            #     name = item['name']
+            #     if name not in combined:
+            #         combined[name] = {}
+            #         combined[name]['name'] = name
+            #         combined[name]['url'] = item['url']
+            #         combined[name]['label'] = item['label']
+            #         combined[name]['similarity_list'] = [0] * len_features
+            #         combined[name]['similarity_list'][4] = item['similarity']
+            #     else:
+            #         combined[name]['similarity_list'][4] = item['similarity']
 
             for k, v in combined.items():
-                combined[k]['similarity'] = np.average(combined[k]['similarity_list'])
+                # temp = []
+                # for sim_value in combined[k]['similarity_list']:
+                #     if sim_value != 0:
+                #         temp.append(sim_value)
+                #     else:
+                #         if isinstance(sim_value, int):
+                #             continue
+                #         else:
+                #             temp.append(sim_value)
+                # combined[k]['similarity'] = np.average(temp)
+                s = 0
+                for i, similarity in enumerate(combined[k]['similarity_list']):
+                    s += (weights[i] * similarity)
+                combined[k]['similarity'] = s / np.sum(weights)
+                combined[k]['similarity_list'] = [combined[k]['similarity']] + combined[k]['similarity_list']
 
             combined = list(combined.values())
             combined.sort(key=lambda x: x['similarity'], reverse=True)
@@ -170,8 +199,8 @@ def getCombinedResults(request, _id):
                 'rbsd': sim_rbsd[:200],
                 'segmentation': sim_segmentation[:200],
                 'resnet': sim_resnet[:200],
-                'local': sim_local[:200],
-                'features': ['Combined', 'CLD', 'RBSD', 'Segmentation', 'Resnet', 'Local']
+                # 'local': sim_local[:200],
+                'features': ['Combined', 'CLD', 'RBSD', 'Segmentation', 'Resnet']
             })
     except Exception as e:
         print(traceback.print_exc())
