@@ -98,7 +98,9 @@ def extract_features(path, output, type):
 
 def get_similarity_euclidean(descriptor1, descriptor2):
     descriptor1 = descriptor1.reshape(-1, 64)
+    descriptor1 = descriptor1 / np.linalg.norm(descriptor1)
     descriptor2 = descriptor2.reshape(-1, 64)
+    descriptor2 = descriptor2 / np.linalg.norm(descriptor2)
     dist = 0
     sum = 0
     for i, layer in enumerate(descriptor1):
@@ -133,10 +135,10 @@ def get_similarity_cld(query, dataset):
     q_sim = df['similarity']
 
     if dataset == 'cifar':
-        json_qsim = [{'name': file_name[i], 'similarity': 1.0 - q_sim[i], 'label': labels[i],
+        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
                       'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
     if dataset == 'pascal':
-        json_qsim = [{'name': file_name[i], 'similarity': 1.0 - q_sim[i], 'label': labels[i],
+        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
                       'url': '/media/voc/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
 
     return json_qsim
