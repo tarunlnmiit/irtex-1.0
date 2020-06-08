@@ -53,8 +53,8 @@ class RBSDescriptor:
                           'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
             # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
         if self.dataset == 'pascal':
-            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
-                          'url': '/media/voc/{}/{}'.format(self.labels[i], self.file_name[i])} for i in
+            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': ', '.join(self.labels[i]),
+                          'url': '/media/voc/{}/{}'.format(self.labels[i][0], self.file_name[i])} for i in
                          range(len(q_sim))]
 
         return json_qsim
