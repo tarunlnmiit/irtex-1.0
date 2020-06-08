@@ -49,9 +49,9 @@ def get_similarity_resnet(query, dataset):
     features = df['resnet'].tolist()
     labels = df['label']
 
-    q_sim = cosine_similarity(features, query)
     json_qsim = []
     if dataset == 'cifar':
+        q_sim = cosine_similarity(features, query)
         for i in range(len(q_sim)):
             for label in labels[i]:
                 row = {'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': label,
@@ -59,12 +59,16 @@ def get_similarity_resnet(query, dataset):
 
                 json_qsim.append(row)
     if dataset == 'pascal':
+        query = query.reshape(-1, 23)
+        query = query[:, 1:-2]
+        features = np.array(features)
+        features = features[:, 1:-2]
+        q_sim = cosine_similarity(features, query)
         for i in range(len(q_sim)):
-            for label in labels[i]:
-                row = {'name': file_name[i], 'similarity': q_sim[i][0], 'label': label,
-                       'url': '/media/voc/{}/{}'.format(label, file_name[i])}
+            row = {'name': file_name[i], 'similarity': q_sim[i][0], 'label': ', '.join(labels[i]),
+                   'url': '/media/voc/{}/{}'.format(labels[i][0], file_name[i])}
 
-                json_qsim.append(row)
+            json_qsim.append(row)
 
     return json_qsim
 
