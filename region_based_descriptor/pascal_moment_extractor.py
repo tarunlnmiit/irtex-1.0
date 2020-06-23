@@ -39,12 +39,8 @@ if __name__ == "__main__":
         exit(0)
     else:
         dataset = 'pascal'
-        if dataset == 'cifar':
-            radius = 16
-            degree = 16
-        else:
-            radius = 128
-            degree = 20
+        radius = 128
+        degree = 20
         desc = ZernikeMoments(radius,degree)
         zernike = []
 
@@ -56,27 +52,26 @@ if __name__ == "__main__":
         file_name = []
         labels = []
 
+        df = pd.read_pickle('moments_pascal_updated.pkl')
+        file_present = df['file_name']
         # Loading the image dataset and converting into zernike moments
         for label in tqdm(os.listdir(path)):
             for img in tqdm(os.listdir(os.path.join(path, label))):
-                img_array = cv2.imread(os.path.join(path, label, img), cv2.IMREAD_UNCHANGED)
-                img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
-                if dataset != 'cifar':
+                if img not in file_present:
+                    img_array = cv2.imread(os.path.join(path, label, img), cv2.IMREAD_UNCHANGED)
+                    img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
                     img_array = cv2.resize(img_array, (256, 256))
-                # img_array = img_array + np.random.normal(scale=2, size=img_array.shape)
-                moments = desc.describe(img_array)
+                    # img_array = img_array + np.random.normal(scale=2, size=img_array.shape)
+                    moments = desc.describe(img_array)
 
-                row = [img, moments, label]
-                data_list.append(row)
+                    row = [img, moments, label]
+                    data_list.append(row)
 
-                file_name.append(img)
-                zernike.append(moments)
-                labels.append(label)
+                    file_name.append(img)
+                    zernike.append(moments)
+                    labels.append(label)
 
-        if dataset == 'cifar':
-            n_comp = 15
-        else:
-            n_comp = 20
+        n_comp = 20
         pca = PCA(n_components=n_comp)
         principalComponents = pca.fit_transform(zernike)
         for i,m in enumerate(principalComponents):
@@ -98,8 +93,8 @@ if __name__ == "__main__":
         else:
             columns = data_list.pop(0)
             df = pd.DataFrame(data_list, columns=columns)
-            pd.to_pickle(df, os.path.join(output, 'moments_pascal.pkl'))
+            pd.to_pickle(df, os.path.join(output, 'moments_pascal_extra.pkl'))
             #Storing after applying PCA
             columns = pca_moments.pop(0)
             df = pd.DataFrame(pca_moments, columns=columns)
-            pd.to_pickle(df, os.path.join(output, 'moments_pascal_pca.pkl'))
+            pd.to_pickle(df, os.path.join(output, 'moments_pascal_extra_pca.pkl'))

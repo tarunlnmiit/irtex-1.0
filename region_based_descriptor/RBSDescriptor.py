@@ -21,18 +21,17 @@ class NumpyArrayEncoder(JSONEncoder):
 
 class RBSDescriptor:
     def __init__(self, dataset):
-        self.radius = 16
         self.dataset = dataset
         feature_csv_path = os.path.join(settings.BASE_DIR, 'region_based_descriptor')
         if self.dataset == 'cifar':
-            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar.pkl'))
+            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar_pca.pkl'))
             #To perform PCA on query image
-            df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar_16.pkl'))
+            df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar.pkl'))
             n_comp = 15
         if self.dataset == 'pascal':
-            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal.pkl'))
+            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal_pca_updated.pkl'))
             # To perform PCA on query image
-            df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal_20.pkl'))
+            df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal_updated.pkl'))
             n_comp = 20
         self.file_name = df['file_name']
         self.moments = df['moments']
@@ -62,11 +61,13 @@ class RBSDescriptor:
 # Calculating the zernike moments of query image
     def zernike_moments(self, image):
         if self.dataset =='cifar':
+            radius = 16
             degree = 16
         if self.dataset =='pascal':
+            radius = 128
             degree = 20
 
-        query_moment = mahotas.features.zernike_moments(image, self.radius, degree=degree).reshape(1, -1)
+        query_moment = mahotas.features.zernike_moments(image, radius, degree=degree).reshape(1, -1)
         #To perform PCA on query image
         query_moment = self.pca.transform(query_moment)
         return query_moment
