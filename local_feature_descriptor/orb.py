@@ -84,15 +84,35 @@ def extract_features(path, output, type, n_cluster, n_components, n_neighbors):
 
 def get_similarity_orb(query):
     feature__path = os.path.join(settings.BASE_DIR, 'local_feature_descriptor')
-    df = pd.read_pickle(os.path.join(feature__path, 'orb_pickle/orb_final.pkl'))
+    df = pd.read_pickle(os.path.join(feature__path, 'orb_pickle/orb_final_pascal.pkl'))
     file_name = df['file_name']
     orb = df['orb'].tolist()
     labels = df['label']
 
     q_sim = cosine_similarity(orb, query)
+    q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
 
-    json_qsim = [{'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': labels[i],
-                  'url': '/media/voc/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+    json_qsim = [{'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': ', '.join(labels[i]),
+                  'url': '/media/voc/{}/{}'.format(labels[i][0], file_name[i])} for i in range(len(q_sim))]
+
+    return json_qsim
+
+
+def get_similarity_orb_algorithm2(query, images):
+    feature__path = os.path.join(settings.BASE_DIR, 'local_feature_descriptor')
+    df = pd.read_pickle(os.path.join(feature__path, 'orb_pickle/orb_final_pascal.pkl'))
+
+    df = df[df['file_name'].isin(images)]
+
+    file_name = df['file_name'].tolist()
+    orb = df['orb'].tolist()
+    labels = df['label'].tolist()
+
+    q_sim = cosine_similarity(orb, query)
+    q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
+
+    json_qsim = [{'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': ', '.join(labels[i]),
+                  'url': '/media/voc/{}/{}'.format(labels[i][0], file_name[i])} for i in range(len(q_sim))]
 
     return json_qsim
 

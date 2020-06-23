@@ -123,6 +123,35 @@ def get_similarity_segmentation_pascal(segmented_query_img_pca):
     return similarity
 
 
+def get_similarity_segmentation_pascal_algorithm2(segmented_query_img_pca, images):
+    count = 0
+    similarity = []
+    feature__path = os.path.join(settings.BASE_DIR, 'segmentation/')
+
+    # path = 'C:\\Users\\Gurpreet\Desktop\\python\\IRTEX-Segmentation\\irtex-1.0\\segmentation\\segmentation_CNN'
+    df = pd.read_pickle(os.path.join(feature__path, '{}.pkl'.format(code)))
+
+    df = df[df['file_name'].isin(images)]
+
+    file_name = df['file_name'].tolist()
+    features = df[code].tolist()
+    labels = df['label'].tolist()
+
+    for iter in range(len(features)):
+        sim_ssim = ssim(segmented_query_img_pca.reshape(128, 2), features[iter].reshape(128, 2), multichannel=True)
+        # sim_ari = adjusted_rand_score(segmented_query_img,features[i])
+
+        ##Normalise ssim similarity between 0 and 1
+        sim_ssim = ((1 + sim_ssim)/2)
+
+        for label in labels[iter]:
+            row = {'name': file_name[iter], 'similarity': sim_ssim, 'label': label,
+                   'url': '/media/voc/{}/{}'.format(label, file_name[iter])}
+            similarity.append(row)
+
+    return similarity
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='FCN_Resnet Segmentation on Pascal dataset')
 

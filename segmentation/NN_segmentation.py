@@ -238,6 +238,30 @@ def get_similarity_segmentation_cifar(segmented_query_img):
     return similarity
 
 
+def get_similarity_segmentation_cifar_algorithm2(segmented_query_img, images):
+    similarity = []
+
+    feature__path = os.path.join(settings.BASE_DIR, 'segmentation/')
+    # path = 'C:\\Users\\Gurpreet\Desktop\\python\\IRTEX-Segmentation\\irtex-1.0\\segmentation\\segmentation_CNN'
+    df = pd.read_pickle(os.path.join(feature__path, '{}.pkl'.format(code)))
+
+    df = df[df['file_name'].isin(images)]
+
+    file_name = df['file_name'].tolist()
+    features = df[code].tolist()
+    labels = df['label'].tolist()
+
+    for iter in range(len(features)):
+        # sim_ssim = ssim(segmented_query_img.reshape(128,n_components), features[i].reshape(128,n_components),multichannel=True)
+        sim_ari = adjusted_rand_score(segmented_query_img, features[iter])
+
+        # row = [file_name[iter], sim_ari, labels[iter]]
+        row = {'name': file_name[iter], 'similarity': sim_ari, 'label': labels[iter],
+               'url': '/media/cifar10/{}/{}'.format(labels[iter], file_name[iter])}
+        similarity.append(row)
+
+    return similarity
+
 # Inputs , segmentation , query image and similarity computation calls
 
 if __name__ == "__main__":

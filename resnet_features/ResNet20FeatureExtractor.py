@@ -52,6 +52,7 @@ def get_similarity_resnet(query, dataset):
     json_qsim = []
     if dataset == 'cifar':
         q_sim = cosine_similarity(features, query)
+        q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
         for i in range(len(q_sim)):
             for label in labels[i]:
                 row = {'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': label,
@@ -64,6 +65,7 @@ def get_similarity_resnet(query, dataset):
         features = np.array(features)
         features = features[:, 1:-2]
         q_sim = cosine_similarity(features, query)
+        q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
         for i in range(len(q_sim)):
             row = {'name': file_name[i], 'similarity': q_sim[i][0], 'label': ', '.join(labels[i]),
                    'url': '/media/voc/{}/{}'.format(labels[i][0], file_name[i])}

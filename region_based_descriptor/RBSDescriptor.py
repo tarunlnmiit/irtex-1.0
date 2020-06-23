@@ -33,6 +33,7 @@ class RBSDescriptor:
             # To perform PCA on query image
             df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal_updated.pkl'))
             n_comp = 20
+        self.df = df
         self.file_name = df['file_name']
         self.moments = df['moments']
         self.moments = self.moments.tolist()
@@ -47,6 +48,24 @@ class RBSDescriptor:
 # Calculate similarity between the query image and extracted feature and converting it into json format
     def similarity(self, query):
         q_sim = cosine_similarity(self.moments, query)
+        q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
+        if self.dataset == 'cifar':
+            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
+                          'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
+            # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
+        if self.dataset == 'pascal':
+            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': ', '.join(self.labels[i]),
+                          'url': '/media/voc/{}/{}'.format(self.labels[i][0], self.file_name[i])} for i in
+                         range(len(q_sim))]
+
+        return json_qsim
+
+    def similarity_algorithm2(self, images, query):
+        self.file_name = self.file_name.tolist()
+        self.labels = self.labels.tolist()
+        df_algorithm2 = self.df[self.df['file_name'].isin(images)]
+        q_sim = cosine_similarity(df_algorithm2['moments'].tolist(), query)
+        q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
         if self.dataset == 'cifar':
             json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
                           'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]

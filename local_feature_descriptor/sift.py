@@ -91,6 +91,26 @@ def get_similarity_sift(query):
     labels = df['label']
 
     q_sim = cosine_similarity(sift, query)
+    q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
+
+    json_qsim = [{'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': labels[i],
+                  'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+
+    return json_qsim
+
+
+def get_similarity_sift_algorithm2(query, images):
+    feature__path = os.path.join(settings.BASE_DIR, 'local_feature_descriptor')
+    df = pd.read_pickle(os.path.join(feature__path, 'sift_pickle/sift_final.pkl'))
+
+    df = df[df['file_name'].isin(images)]
+
+    file_name = df['file_name'].tolist()
+    sift = df['sift'].tolist()
+    labels = df['label'].tolist()
+
+    q_sim = cosine_similarity(sift, query)
+    q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
 
     json_qsim = [{'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': labels[i],
                   'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]

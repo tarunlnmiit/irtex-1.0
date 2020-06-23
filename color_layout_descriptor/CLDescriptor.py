@@ -144,6 +144,36 @@ def get_similarity_cld(query, dataset):
     return json_qsim
 
 
+def get_similarity_cld_algorithm2(query, dataset, images):
+    feature__path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
+    if dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(feature__path, 'cld_pascal.pkl'))
+
+    df = df[df['file_name'].isin(images)]
+    file_name = df['file_name'].tolist()
+    labels = df['label'].tolist()
+
+    # cld = df['cld'].tolist()
+    # q_sim = cosine_similarity(cld, query)
+    # json_qsim = [{'name': file_name[i], 'similarity': q_sim[i][0], 'label': labels[i],
+    #              'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+
+    df['similarity'] = df.cld.apply(get_similarity_dataframe, args=[query])
+
+    q_sim = df['similarity'].tolist()
+
+    if dataset == 'cifar':
+        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
+                      'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+    if dataset == 'pascal':
+        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
+                      'url': '/media/voc/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+
+    return json_qsim
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='CLD Extractor')
 
