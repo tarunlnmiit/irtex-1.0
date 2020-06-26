@@ -43,7 +43,7 @@ def get_similarity_resnet(query, dataset):
     if dataset == 'cifar':
         df = pd.read_pickle(os.path.join(feature_csv_path, 'cifar_resnet_logits.pkl'))
     if dataset == 'pascal':
-        df = pd.read_pickle(os.path.join(feature_csv_path, 'deeplab_pascal.pkl'))
+        df = pd.read_pickle(os.path.join(feature_csv_path, 'pascal.pkl'))
 
     file_name = df['file_name']
     features = df['resnet'].tolist()
