@@ -54,25 +54,25 @@ class RBSDescriptor:
                           'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
             # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
         if self.dataset == 'pascal':
-            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': ', '.join(self.labels[i]),
+            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
                           'url': '/media/voc/{}/{}'.format(self.labels[i][0], self.file_name[i])} for i in
                          range(len(q_sim))]
 
         return json_qsim
 
     def similarity_algorithm2(self, images, query):
-        self.file_name = self.file_name.tolist()
-        self.labels = self.labels.tolist()
         df_algorithm2 = self.df[self.df['file_name'].isin(images)]
+        file_name_algo2 = df_algorithm2['file_name'].tolist()
+        labels_algo2 = df_algorithm2['label'].tolist()
         q_sim = cosine_similarity(df_algorithm2['moments'].tolist(), query)
         q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
         if self.dataset == 'cifar':
-            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': self.labels[i],
-                          'url': '/media/cifar10/{}/{}'.format(self.labels[i], self.file_name[i])} for i in range(len(q_sim))]
+            json_qsim = [{'name': file_name_algo2[i], 'similarity': q_sim[i][0], 'label': labels_algo2[i],
+                          'url': '/media/cifar10/{}/{}'.format(labels_algo2[i], file_name_algo2[i])} for i in range(len(q_sim))]
             # json_qsim = json.loads(json.dumps(json_qsim, cls=NumpyArrayEncoder))
         if self.dataset == 'pascal':
-            json_qsim = [{'name': self.file_name[i], 'similarity': q_sim[i][0], 'label': ', '.join(self.labels[i]),
-                          'url': '/media/voc/{}/{}'.format(self.labels[i][0], self.file_name[i])} for i in
+            json_qsim = [{'name': file_name_algo2[i], 'similarity': q_sim[i][0], 'label': labels_algo2[i],
+                          'url': '/media/voc/{}/{}'.format(labels_algo2[i][0], file_name_algo2[i])} for i in
                          range(len(q_sim))]
 
         return json_qsim
