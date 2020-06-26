@@ -120,7 +120,7 @@ def get_similarity_cld(query, dataset):
     if dataset == 'cifar':
         df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
     if dataset == 'pascal':
-        df = pd.read_pickle(os.path.join(feature__path, 'cld_pascal.pkl'))
+        df = pd.read_pickle(os.path.join(feature__path, 'cld_full_pascal.pkl'))
 
     file_name = df['file_name']
     labels = df['label']
@@ -139,7 +139,7 @@ def get_similarity_cld(query, dataset):
                       'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
     if dataset == 'pascal':
         json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
-                      'url': '/media/voc/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+                      'url': '/media/voc/{}/{}'.format(labels[i][0], file_name[i])} for i in range(len(q_sim))]
 
     return json_qsim
 
@@ -149,7 +149,7 @@ def get_similarity_cld_algorithm2(query, dataset, images):
     if dataset == 'cifar':
         df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
     if dataset == 'pascal':
-        df = pd.read_pickle(os.path.join(feature__path, 'cld_pascal.pkl'))
+        df = pd.read_pickle(os.path.join(feature__path, 'cld_full_pascal.pkl'))
 
     df = df[df['file_name'].isin(images)]
     file_name = df['file_name'].tolist()
@@ -169,7 +169,7 @@ def get_similarity_cld_algorithm2(query, dataset, images):
                       'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
     if dataset == 'pascal':
         json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
-                      'url': '/media/voc/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+                      'url': '/media/voc/{}/{}'.format(labels[i][0], file_name[i])} for i in range(len(q_sim))]
 
     return json_qsim
 
