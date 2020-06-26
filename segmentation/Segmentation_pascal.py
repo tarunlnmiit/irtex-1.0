@@ -39,7 +39,7 @@ class semantic_segmentation_pascal:
         return self.model
 
 
-code = 'pascal_segment_final'
+code = 'pascal_segment_all'
 model = semantic_segmentation_pascal().get_model()
 pca = PCA(n_components=2)
 
@@ -115,10 +115,10 @@ def get_similarity_segmentation_pascal(segmented_query_img_pca):
         ##Normalise ssim similarity between 0 and 1
         sim_ssim = ((1 + sim_ssim)/2)
 
-        for label in labels[iter]:
-            row = {'name': file_name[iter], 'similarity': sim_ssim, 'label': label,
-                   'url': '/media/voc/{}/{}'.format(label, file_name[iter])}
-            similarity.append(row)
+        # for label in labels[iter]:
+        row = {'name': file_name[iter], 'similarity': sim_ssim, 'label': labels[iter],
+               'url': '/media/voc/{}/{}'.format(labels[iter][0], file_name[iter])}
+        similarity.append(row)
 
     return similarity
 
@@ -144,10 +144,10 @@ def get_similarity_segmentation_pascal_algorithm2(segmented_query_img_pca, image
         ##Normalise ssim similarity between 0 and 1
         sim_ssim = ((1 + sim_ssim)/2)
 
-        for label in labels[iter]:
-            row = {'name': file_name[iter], 'similarity': sim_ssim, 'label': label,
-                   'url': '/media/voc/{}/{}'.format(label, file_name[iter])}
-            similarity.append(row)
+        # for label in labels[iter]:
+        row = {'name': file_name[iter], 'similarity': sim_ssim, 'label': labels[iter],
+               'url': '/media/voc/{}/{}'.format(labels[iter][0], file_name[iter])}
+        similarity.append(row)
 
     return similarity
 
