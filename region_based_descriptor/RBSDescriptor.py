@@ -134,8 +134,8 @@ class RBSDescriptor:
         cv2.imwrite('query_rbsd.png', result_query)
 
         list_images = []
-        list_images.append(image)
-        list_images.append(query)
+        list_images.append(os.path.basename(image_path))
+        list_images.append(os.path.basename(query_path))
 
         df_ = self.df[self.df['file_name'].isin(list_images)]
         moments = df_['moments'].tolist()
