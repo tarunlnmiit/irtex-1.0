@@ -4,10 +4,11 @@ import numpy as np
 import os
 import cv2
 import mahotas
-from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import pickle
 import json
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.ndimage.measurements import center_of_mass
 from sklearn.decomposition import PCA
 from json import JSONEncoder
 
