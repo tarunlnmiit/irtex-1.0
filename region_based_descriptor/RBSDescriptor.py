@@ -114,9 +114,6 @@ class RBSDescriptor:
         img_temp = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
         query_temp = cv2.cvtColor(query_array, cv2.COLOR_BGR2GRAY)
 
-        img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
-        query_array = cv2.cvtColor(query_array, cv2.COLOR_BGR2RGB)
-
         x_img, y_img = center_of_mass(img_temp)
         x_query, y_query = center_of_mass(query_temp)
         x_img = int(x_img)
