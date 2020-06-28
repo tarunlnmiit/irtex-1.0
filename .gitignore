@@ -50,3 +50,54 @@ iretx/__pycache__/
 /resnet_features/deeplab_pascal_all.pkl
 /resnet20_cifar_10_features/Untitled.ipynb
 /resnet20_cifar_10_features/.ipynb_checkpoints/Untitled-checkpoint.ipynb
+/segmentation/masks/
+/concat_cifar_pascal.pkl
+/concat_pickle_pascal.pkl
+/segmentation/CIFAR visual explanation.ipynb
+/segmentation/.ipynb_checkpoints/CIFAR visual explanation-checkpoint.ipynb
+/segmentation/cifar_segmentation_60k.ipynb
+/segmentation/.ipynb_checkpoints/cifar_segmentation_60k-checkpoint.ipynb
+/local_feature_descriptor/global_algo1
+/local_feature_descriptor/global_algo2
+/local_feature_descriptor/global_pascal_algo1
+/local_feature_descriptor/global_pascal_algo2
+/local_feature_descriptor/iris
+/local_feature_descriptor/local and nonlocal comparision.jpg
+/local_feature_descriptor/pascal_algo1
+/local_feature_descriptor/pascal_algo2
+/local_feature_descriptor/cifar_algo1
+/local_feature_descriptor/cifar_algo2
+/local_feature_descriptor/Decision Rule.ipynb
+/local_feature_descriptor/decision_rule_global_explanation.pdf
+/resnet_features/deeplab_pascal_new.pkl
+/local_feature_descriptor/empirical_similarity.py
+/local_feature_descriptor/Local Pickle Modifier.ipynb
+/local_feature_descriptor/Local Similarity.ipynb
+/local_feature_descriptor/mapping_pascal.pkl
+/local_feature_descriptor/Merge Pickle.ipynb
+/Model Comparison.ipynb
+/.ipynb_checkpoints/Model Comparison-checkpoint.ipynb
+/Model Comparison-Cifar.ipynb
+/.ipynb_checkpoints/Model Comparison-Cifar-checkpoint.ipynb
+/local_feature_descriptor/orb_final_pascal.pkl
+/local_feature_descriptor/empirical_sim/pascal_cow_2011_002719.jpg
+/segmentation/pascal_mask.pkl
+/Pickle Concat.ipynb
+/.ipynb_checkpoints/Pickle Concat-checkpoint.ipynb
+/resnet_features/Pickle Verification.ipynb
+/local_feature_descriptor/Random Query Image Generator.ipynb
+/resnet_features/resnet_pascal_updated.pkl
+/local_feature_descriptor/rules
+/local_feature_descriptor/rules.pdf
+/deeplab3_resnet_descriptor/subset_3100_deeplab.pkl
+/deeplab3_resnet_descriptor/subset_v3156_deeplab.pkl
+/local_feature_descriptor/orb_pickle/test.pkl
+/resnet_features/test.pkl
+/local_feature_descriptor/Total Random Baseline.ipynb
+/Untitled.ipynb
+/.ipynb_checkpoints/Untitled-checkpoint.ipynb
+/segmentation/Visual explanations pascal.ipynb
+/segmentation/.ipynb_checkpoints/Visual explanations pascal-checkpoint.ipynb
+/local_feature_descriptor/withlocal
+/local_feature_descriptor/without_orb_pascal.jpg
+/local_feature_descriptor/withoutlocal
