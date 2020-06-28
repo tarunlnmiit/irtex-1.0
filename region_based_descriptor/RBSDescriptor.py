@@ -107,12 +107,18 @@ class RBSDescriptor:
         img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         query_array = cv2.imread(query_path, cv2.IMREAD_UNCHANGED)
 
-        img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
-        query_array = cv2.cvtColor(query_array, cv2.COLOR_BGR2GRAY)
-        # img = cv2.resize(img, (256, 256), interpolation=cv2.INTER_AREA)
+        if self.dataset == 'pascal':
+            img_array = cv2.resize(img_array, (256, 256))
+            query_array = cv2.resize(query_array, (256, 256))
 
-        x_img, y_img = center_of_mass(img_array)
-        x_query, y_query = center_of_mass(query_array)
+        img_temp = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
+        query_temp = cv2.cvtColor(query_array, cv2.COLOR_BGR2GRAY)
+
+        img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
+        query_array = cv2.cvtColor(query_array, cv2.COLOR_BGR2RGB)
+
+        x_img, y_img = center_of_mass(img_temp)
+        x_query, y_query = center_of_mass(query_temp)
         x_img = int(x_img)
         y_img = int(y_img)
         x_query = int(x_query)
@@ -127,9 +133,6 @@ class RBSDescriptor:
         # apply mask to image
         result_img = cv2.bitwise_and(img_array, mask_img)
         result_query = cv2.bitwise_and(query_array, mask_query)
-
-        result_img = cv2.cvtColor(result_img, cv2.COLOR_GRAY2RGB)
-        result_query = cv2.cvtColor(result_query, cv2.COLOR_GRAY2RGB)
 
         # save results
         cv2.imwrite(os.path.join(store_path, '{}_rbsd.png'.format(retr_image_name.split('.')[0])), result_img)
@@ -147,7 +150,7 @@ class RBSDescriptor:
         score = q_sim[0]
         score = score[0] * 100
         score = round(score, 2)
-        text = 'Below regions were compared to get the similairty score. The similarity between these two region is ' + str(score) + '%'
+        text = 'Below regions were compared to get the similarity score. The similarity between these two region is ' + str(score) + '%'
 
         # textual = []
         # textual.append(text)
