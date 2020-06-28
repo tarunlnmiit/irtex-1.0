@@ -97,10 +97,12 @@ class RBSDescriptor:
         return query_moment
 
 # For Textual and Visual Explanation
-    def explanation(self, image_path, query_path):
-        #media_path = os.path.join(settings.BASE_DIR, 'media')
-        #path_img = os.path.join(media_path, image)
-        #path_query = os.path.join(media_path, query)
+    def explanation(self, query_path, image_path):
+        media_path = os.path.join(settings.BASE_DIR, 'media')
+        store_path = os.path.join(media_path, 'rbsd')
+
+        query_image_name = query_path.split('/')[-1]
+        retr_image_name = image_path.split('/')[-1]
 
         img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         query_array = cv2.imread(query_path, cv2.IMREAD_UNCHANGED)
@@ -130,8 +132,8 @@ class RBSDescriptor:
         result_query = cv2.cvtColor(result_query, cv2.COLOR_GRAY2RGB)
 
         # save results
-        cv2.imwrite('img_rbsd.png', result_img)
-        cv2.imwrite('query_rbsd.png', result_query)
+        cv2.imwrite(os.path.join(store_path, '{}_rbsd.png'.format(retr_image_name.split('.')[0])), result_img)
+        cv2.imwrite(os.path.join(store_path, '{}_rbsd.png'.format(query_image_name.split('.')[0])), result_query)
 
         list_images = []
         list_images.append(os.path.basename(image_path))
@@ -145,17 +147,23 @@ class RBSDescriptor:
         score = q_sim[0]
         score = score[0] * 100
         score = round(score, 2)
-        text = 'Below regions were compared to get the similairty score. The similarity between this two region is ' \
-               + str(score) + '%'
+        text = 'Below regions were compared to get the similairty score. The similarity between these two region is ' + str(score) + '%'
 
-        textual = []
-        textual.append(text)
+        # textual = []
+        # textual.append(text)
 
-        visual = []
-        visual.append('img_rbsd.png')
-        visual.append('query_rbsd.png')
+        # visual = []
+        # visual.append('img_rbsd.png')
+        # visual.append('query_rbsd.png')
 
-        return textual, visual
+        explanation = {}
+        explanation['text'] = text
+
+        explanation['images'] = [{'name': 'Query Image', 'url': '/media/rbsd/{}_rbsd.png'.format(query_image_name.split('.')[0])},
+                             {'name': 'Result Image',
+                              'url': '/media/rbsd/{}_rbsd.png'.format(retr_image_name.split('.')[0])}]
+
+        return explanation
 
 # Pre-processing the query image so as to match extracted features
     def image_preprocessing(self, image):
