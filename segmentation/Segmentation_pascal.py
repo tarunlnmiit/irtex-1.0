@@ -16,7 +16,7 @@ import argparse
 import cv2
 from skimage.measure import compare_ssim as ssim
 from sklearn.metrics.cluster import adjusted_rand_score
-from sklearn.metrics import jaccard_similarity_score
+from skimage.segmentation import mark_boundaries
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import normalize
 import scipy.io as sio
@@ -150,6 +150,97 @@ def get_similarity_segmentation_pascal_algorithm2(segmented_query_img_pca, image
         similarity.append(row)
 
     return similarity
+
+
+def getLocalExplanation(query_image_path, retr_image_path):
+    media_path = os.path.join(settings.BASE_DIR, 'media')
+    store_path = os.path.join(media_path, 'seg')
+
+    query_image_name = query_image_path.split('/')[-1]
+    retr_image_name = retr_image_path.split('/')[-1]
+
+    query_image_mask = cv2.imread(os.path.join(media_path, 'masks/voc/{}.png'.format(query_image_name.split('.')[0])),
+                                  cv2.IMREAD_UNCHANGED)
+    query_image_mask = cv2.cvtColor(query_image_mask, cv2.COLOR_BGR2GRAY)
+
+    retr_image_mask = cv2.imread(os.path.join(media_path, 'masks/voc/{}.png'.format(retr_image_name.split('.')[0])),
+                                 cv2.IMREAD_UNCHANGED)
+    retr_image_mask = cv2.cvtColor(retr_image_mask, cv2.COLOR_BGR2GRAY)
+
+    clusters_query = unique_clusters(query_image_mask)
+    clusters_retr = unique_clusters(retr_image_mask)
+
+    if len(clusters_query) == 0:
+        query_image_mask = np.array((np.array(query_image_mask))[0])
+        query_image_mask = np.reshape(query_image_mask, (128, 128))
+        clusters_query.append(query_image_mask)
+
+    if len(clusters_retr) == 0:
+        retr_image_mask = np.array((np.array(retr_image_mask))[0])
+        retr_image_mask = np.reshape(retr_image_mask, (128, 128))
+        clusters_retr.append(retr_image_mask)
+
+    region_sim_score = region_similarity(clusters_query, clusters_retr)
+    df = pd.DataFrame(region_sim_score, columns=["query_region", "image_region", "similarity"])
+    row = df.loc[df['similarity'].idxmax()]
+
+    savepath_query_vis = store_img_with_boundary(query_image_path, store_path, query_image_name, row[0])
+    savepath_retr_vis = store_img_with_boundary(retr_image_path, store_path, retr_image_name, row[1])
+
+    explanation = {}
+    explanation['text'] = ['The objects present in the foreground of query image and result image are compared. '
+                           'The similarity achieved is {}%. The most similar regions are marked '
+                           'with a boundary.'.format(np.round(row['similarity'] * 100, 3))]
+
+    explanation['images'] = [{'name': 'Query Image', 'url': '/media/seg/{}'.format(savepath_query_vis)},
+                             {'name': 'Result Image',
+                              'url': '/media/seg/{}'.format(savepath_retr_vis)}]
+
+    return explanation
+
+
+def unique_clusters(image_mask):
+    unique = np.unique(image_mask)
+    #     print(unique)
+    clusters = []
+    for i in range(len(unique) - 1):
+        cluster = image_mask.copy()
+        cluster[image_mask != unique[i + 1]] = 0
+        clusters.append(cluster)
+
+    return clusters
+
+
+def region_similarity(clusters_query, clusters_retr):
+    score = []
+    for reg in clusters_retr:
+        for region in clusters_query:
+            ari = adjusted_rand_score(region.flatten(), reg.flatten())
+            ari = (ari + 1) / 2
+            row = [region, reg, ari]
+            score.append(row)
+    return score
+
+
+def store_img_with_boundary(image_path, store_path, image_name, row):
+    image_org = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+    image_org = cv2.cvtColor(image_org, cv2.COLOR_BGR2RGB)
+    image_org = cv2.resize(image_org, (128, 128))
+    image_org = mark_boundaries(image_org, row, mode='thick')
+
+    image_org = cv2.convertScaleAbs(image_org, alpha=(255.0))
+    image_org = cv2.cvtColor(image_org, cv2.COLOR_RGB2BGR)
+
+    image_name, ex = image_name.split('.')
+
+    savepath_vis = store_path + '/' + image_name + '_vis.jpg'
+
+    cv2.imwrite(savepath_vis, image_org)
+
+    return image_name + '_vis.jpg'
+
+
+#     plt.imshow(image_org)
 
 
 if __name__ == "__main__":
