@@ -54,11 +54,10 @@ def get_similarity_resnet(query, dataset):
         q_sim = cosine_similarity(features, query)
         q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
         for i in range(len(q_sim)):
-            for label in labels[i]:
-                row = {'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': label,
-                          'url': '/media/cifar10/{}/{}'.format(label, file_name[i])}
+            row = {'name': file_name[i], 'similarity': np.float64(q_sim[i][0]), 'label': labels[i],
+                      'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])}
 
-                json_qsim.append(row)
+            json_qsim.append(row)
     if dataset == 'pascal':
         query = query.reshape(-1, 23)
         query = query[:, 1:-2]
