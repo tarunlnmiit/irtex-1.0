@@ -357,14 +357,27 @@ def getResnet20Results(request, _id):
     return response
 
 
-def image_data(request, _id):
-    image_instance = QueryImage.objects.get(_id=_id)
-    serializer = QueryImageSerializer(image_instance)
+def image_data(request):
+    # image_instance = QueryImage.objects.get(_id=_id)
+    # serializer = QueryImageSerializer(image_instance)
+    query_url = request.GET.get('query_url', None)
 
-    return JsonResponse({
-        'name': serializer.data['file'].split('/')[-1],
-        'url': serializer.data['file'],
+    if query_url is None:
+        response = JsonResponse({
+            'error': 'Invalid Query URL'
+        })
+
+    response = JsonResponse({
+        'name': query_url.split('/')[-1],
+        'url': query_url
     })
+
+    return response
+
+    # return JsonResponse({
+    #     'name': serializer.data['file'].split('/')[-1],
+    #     'url': serializer.data['file'],
+    # })
 
 
 def getLocalTextExplanations(request):
@@ -473,12 +486,12 @@ def getLocalTextExplanations(request):
         session.save()
 
         response = JsonResponse({
-            'message': 'Key points are interesting or stand out points in an image like corners, '
+            'text': ['Key points are interesting or stand out points in an image like corners, '
                        'edges that do not vary with change in image scale and rotation. '
                        'The number of key points detected in query image are {}, '
                        'the number of key points in this result image are {} '
-                       'and the number of matching key points are {}'.format(len(train_keypoints), len(test_keypoints), len(matches)),
-            'url': '/media/local/{}.jpg'.format(random_string)
+                       'and the number of matching key points are {}'.format(len(train_keypoints), len(test_keypoints), len(matches))],
+            'images': [{'name': 'local explanation', 'url': '/media/local/{}.jpg'.format(random_string)}]
         })
     except Exception as e:
         print(traceback.print_exc())
@@ -1174,7 +1187,7 @@ def similarities(file_name, image_path, dataset, weights):
         'segmentation': sim_segmentation[:200],
         'local': sim_local[:200],
         'features': ['Combined', 'Color', 'Region', 'Background / Foreground', 'Keypoints'],
-        # 'explanation': 'explanation'
+        'endpoints': ['cld', 'rbsd', 'segmentation', 'local']
     })
     return response
 
@@ -1429,7 +1442,6 @@ def generateRulesAlgo1(result):
 
 
 def generateRulesAlgo2(result, images):
-    print(len(result))
     dataset = []
     for index, item in enumerate(result):
         if item['name'] in images:
@@ -1507,7 +1519,6 @@ def generateRulesAlgo2(result, images):
     for k, v in rule_d.items():
         v = np.round(v, 3)
         ex += 'by ' + str(v) + '% in ' + feature_map[k] + ', '
-    print(ex)
     return ex[:-1]
 
 
