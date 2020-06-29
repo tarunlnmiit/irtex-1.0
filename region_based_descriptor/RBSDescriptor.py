@@ -157,7 +157,7 @@ class RBSDescriptor:
         # visual.append('query_rbsd.png')
 
         explanation = {}
-        explanation['text'] = text
+        explanation['text'] = [text]
 
         explanation['images'] = [{'name': 'Query Image', 'url': '/media/rbsd/{}_rbsd.png'.format(query_image_name.split('.')[0])},
                              {'name': 'Result Image',
