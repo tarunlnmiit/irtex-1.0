@@ -101,3 +101,4 @@ iretx/__pycache__/
 /local_feature_descriptor/withlocal
 /local_feature_descriptor/without_orb_pascal.jpg
 /local_feature_descriptor/withoutlocal
+/kNN.ipynb
