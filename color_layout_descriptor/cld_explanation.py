@@ -31,9 +31,9 @@ def get_explanation(query_path, result_path):
 
     sims = get_similarity_by_channel(query_img_descriptor, result_img_descriptor)
 
-    text1 = 'The perception of brightness between the two images are similar by {}'.format(round(sims[0], 2))
-    text2 = 'The blue and red components of the colors of the two images are similar by {} and {} respectively '. \
-        format(round(sims[1], 2), round(sims[2], 2))
+    text1 = 'The perception of brightness between the two images are similar by {}%'.format(round(sims[0] * 100, 2))
+    text2 = 'The blue and red components of the colors of the two images are similar by {}% and {}% respectively '. \
+        format(round(sims[1] * 100, 2), round(sims[2] * 100, 2))
     explanation['text'] = [text1, text2]
 
     explanation['images'] = [{'name': 'Query Image', 'url': '/media/cld/{}'.format(Path(query_path).name)}, {'name': 'Result Image',
