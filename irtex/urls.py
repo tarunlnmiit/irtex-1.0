@@ -23,7 +23,7 @@ import result.views as result_views
 urlpatterns = [
     path('', user_views.hello),
     path('admin/', admin.site.urls),
-    path('image/<str:_id>', result_views.image_data),
+    path('image/', result_views.image_data),
     path('userdata/', include('user_crud.urls')),
     path('upload/', include('upload.urls')),
     path('result/', include('result.urls'))
