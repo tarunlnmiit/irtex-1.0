@@ -16,6 +16,7 @@ from segmentation.Segmentation_pascal import extract_features_pascal, get_simila
 from segmentation.NN_segmentation import segmentation_cifar, get_similarity_segmentation_cifar, get_similarity_segmentation_cifar_algorithm2, getCifarLocalExplanations
 from vgg16_imagenet_features.VGG16FeatureExractor import extract_feature_vgg, get_similarity_vgg
 from resnet_features.ResNet20FeatureExtractor import extract_feature_resnet, get_similarity_resnet
+from resnet_features.cnn_explanation import get_cnn_explanation
 from deeplab3_resnet_descriptor.DeepLabResnetSegmentation import extract_feature_deeplab
 
 import cv2
@@ -446,7 +447,7 @@ def getLocalTextExplanations(request):
             # The matches with shorter distance are the ones we want.
             matches = sorted(matches, key=lambda x: x.distance)
 
-            result = cv2.drawMatches(query_image_org, train_keypoints, result_image_org, test_keypoints, matches[:5], result_image_org,
+            result = cv2.drawMatches(query_image_org, train_keypoints, result_image_org, test_keypoints, matches[:10], result_image_org,
                                      flags=2)
 
             cv2.imwrite(match_image_path, result)
@@ -465,7 +466,7 @@ def getLocalTextExplanations(request):
             # The matches with shorter distance are the ones we want.
             matches = sorted(matches, key=lambda x: x.distance)
 
-            result = cv2.drawMatches(query_image_org, train_keypoints, result_image_org, test_keypoints, matches[:5], result_image_org,
+            result = cv2.drawMatches(query_image_org, train_keypoints, result_image_org, test_keypoints, matches[:10], result_image_org,
                                      flags=2)
 
             cv2.imwrite(match_image_path, result)
@@ -490,7 +491,8 @@ def getLocalTextExplanations(request):
                        'edges that do not vary with change in image scale and rotation. '
                        'The number of key points detected in query image are {}, '
                        'the number of key points in this result image are {} '
-                       'and the number of matching key points are {}'.format(len(train_keypoints), len(test_keypoints), len(matches))],
+                       'and the number of matching key points are {}. '
+                     'The lines on the image show the top 10 matches found.'.format(len(train_keypoints), len(test_keypoints), len(matches))],
             'images': [{'name': 'local explanation', 'url': '/media/local/{}.jpg'.format(random_string)}]
         })
     except Exception as e:
@@ -544,6 +546,60 @@ def getCLDTextExplanations(request):
             session.clicks['cld'].append(clicks_obj[0])
         else:
             session.clicks['cld'] = clicks_obj
+        session.save()
+
+        response = JsonResponse(explanation)
+    except Exception as e:
+        print(traceback.print_exc())
+        response = JsonResponse({
+            'error': traceback.print_exc()
+        })
+    finally:
+        return response
+
+
+def getResnetTextExplanations(request):
+    try:
+        query_url = request.GET.get('query_url', None)
+        result_url = request.GET.get('result_url', None)
+        dataset = request.GET.get('dataset', None)
+        session_id = request.GET.get('session_id')
+
+        if dataset is None:
+            response = JsonResponse({
+                'error': 'Dataset not selected'
+            })
+        elif dataset not in ['cifar', 'pascal']:
+            response = JsonResponse({
+                'error': 'Dataset value incorrect'
+            })
+        else:
+            if not query_url or not result_url or not session_id:
+                response = JsonResponse({
+                    'error': 'Parameters incorrect'
+                })
+
+        media_path = os.path.join(settings.BASE_DIR, 'media')
+
+        query_url = '/'.join(query_url.split('/')[1:])
+        query_image_path = os.path.join(settings.BASE_DIR, query_url)
+        result_url = '/'.join(result_url.split('/')[1:])
+        result_image_path = os.path.join(settings.BASE_DIR, result_url)
+        explanation = get_cnn_explanation(dataset, query_image_path, result_image_path)
+
+        clicks_obj = [{
+            'dataset': dataset,
+            'query_url': query_url,
+            'timestamp': datetime.now(),
+            'result_url': result_url,
+            'click': 'clicked on resnet explanations'
+        }]
+
+        session = Session.objects.get(_id=session_id)
+        if 'resnet' in session.clicks:
+            session.clicks['resnet'].append(clicks_obj[0])
+        else:
+            session.clicks['resnet'] = clicks_obj
         session.save()
 
         response = JsonResponse(explanation)
@@ -1519,7 +1575,7 @@ def generateRulesAlgo2(result, images):
     for k, v in rule_d.items():
         v = np.round(v, 3)
         ex += 'by ' + str(v) + '% in ' + feature_map[k] + ', '
-    return ex[:-1]
+    return ex[:-2] + '.'
 
 
 def storeCompareUserClicks(request):
@@ -1534,7 +1590,7 @@ def storeCompareUserClicks(request):
             'query_url': query_url,
             'timestamp': datetime.now(),
             'selected_images': selected_images,
-            'click': 'clicked on segmentation explanations'
+            'click': 'clicked on compare'
         }]
 
         session = Session.objects.get(_id=session_id)

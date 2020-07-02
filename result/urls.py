@@ -11,6 +11,7 @@ urlpatterns = [
     path('explain/cld/', views.getCLDTextExplanations),
     path('explain/rbsd/', views.getRBSDTextExplanations),
     path('explain/segmentation/', views.getSegTextExplanations),
+    path('explain/resnet/', views.getTextExplanations),
     path('explain/global/', views.getGlobalTextExplanations),
     path('queries', views.randomQueries),
     path('algo2/<str:_id>', views.getCombinedResultsAlgorithm2),
