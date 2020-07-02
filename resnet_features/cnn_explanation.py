@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import cv2
+from django.conf import settings
 from skimage.transform import resize
 import os
 import tensorflow as tf
@@ -50,7 +51,7 @@ def create_pascal_label_colormap():
 
     for shift in reversed(range(8)):
         for channel in range(3):
-          colormap[:, channel] |= ((ind >> channel) & 1) << shift
+            colormap[:, channel] |= ((ind >> channel) & 1) << shift
         ind >>= 3
 
     return colormap
@@ -68,59 +69,59 @@ net = tf2cv_get_model("deeplabv3_resnetd152b_voc", aux=False, pretrained_backbon
                       data_format="channels_last")
 net2 = tf2cv_get_model("resnet20_cifar10", pretrained=True, data_format="channels_last")
 
-cifar_labels=['airplane','automobile','bird','cat','deer',
-'dog', 'frog', 'horse','ship','truck']
+cifar_labels = ['airplane', 'automobile', 'bird', 'cat', 'deer',
+                'dog', 'frog', 'horse', 'ship', 'truck']
 
 
-def get_explanation(dataset,query_path,result_path,media_path=''):
-
-    save_path = '../media/cnn_explanation'
-    if media_path != '':
-        save_path=os.path.join(media_path, save_path)
+def get_cnn_explanation(dataset, query_path, result_path):
+    media_path = os.path.join(settings.BASE_DIR, 'media')
+    save_path = os.path.join(media_path, 'cnn')
+    # if media_path != '':
+    #     save_path = os.path.join(media_path, save_path)
 
     if dataset == 'cifar':
-        return get_cifar_explanation(query_path,result_path,save_path)
+        return get_cifar_explanation(query_path, result_path, save_path)
     else:
-        return get_pascal_explanation(query_path,result_path,save_path)
+        return get_pascal_explanation(query_path, result_path, save_path)
 
 
-def get_pascal_explanation(query_path,result_path,save_path):
+def get_pascal_explanation(query_path, result_path, save_path):
     explanation = {}
 
-    query_img_map = get_pascal_feature_map(query_path,save_path)
-    result_img_map = get_pascal_feature_map(result_path,save_path)
+    query_img_map = get_pascal_feature_map(query_path, save_path)
+    result_img_map = get_pascal_feature_map(result_path, save_path)
 
-    query_index=get_pascal_feature_index(query_img_map)
+    query_index = get_pascal_feature_index(query_img_map)
     result_index = get_pascal_feature_index(result_img_map)
 
-    sim = get_similarity(query_index,result_index)
+    sim = get_similarity(query_index, result_index)
 
-    text1 = get_pascal_most_prominent_features(query_index,'Query Image')
-    text2 = get_pascal_most_prominent_features(result_index,'Result Image')
+    text1 = get_pascal_most_prominent_features(query_index, 'Query Image')
+    text2 = get_pascal_most_prominent_features(result_index, 'Result Image')
     explanation['text'] = [text1, text2]
 
     explanation['images'] = [{'name': 'Query Image', 'url': Path(query_path).name}, {'name': 'Result Image',
-                                                                                    'url': Path(result_path).name}]
+                                                                                     'url': Path(result_path).name}]
     return explanation
 
 
-def get_cifar_explanation(query_path, result_path,save_path):
+def get_cifar_explanation(query_path, result_path, save_path):
     explanation = {}
 
     query_prob = generate_cifar_output_probabilities(query_path)
-    generate_cifar_explanation_image(save_path,query_path,query_prob)
+    generate_cifar_explanation_image(save_path, query_path, query_prob)
 
     result_prob = generate_cifar_output_probabilities(result_path)
     generate_cifar_explanation_image(save_path, result_path, result_prob)
 
-    sim = get_similarity(query_prob,result_prob)
+    sim = get_similarity(query_prob, result_prob)
 
     explanation = {}
-    text = 'The distribution of features present in the query and result are similar by {}%'.format(round(sim*100))
+    text = 'The distribution of features present in the query and result are similar by {}%'.format(round(sim * 100))
     explanation['text'] = [text]
 
     explanation['images'] = [{'name': 'Query Image', 'url': Path(query_path).name}, {'name': 'Result Image',
-                                                                                    'url': Path(result_path).name}]
+                                                                                     'url': Path(result_path).name}]
     return explanation
 
 
@@ -141,8 +142,7 @@ def generate_cifar_explanation_image(save_path, image_path, probabilities):
     plt.savefig(save_loc, bbox_inches='tight')
 
 
-def vis_segmentation(image, seg_map,save_loc):
-
+def vis_segmentation(image, seg_map, save_loc):
     plt.figure(figsize=(15, 5))
     grid_spec = gridspec.GridSpec(1, 4, width_ratios=[6, 6, 6, 1])
 
@@ -166,7 +166,7 @@ def vis_segmentation(image, seg_map,save_loc):
     unique_labels = np.unique(seg_map)
     ax = plt.subplot(grid_spec[3])
     plt.imshow(
-    FULL_COLOR_MAP[unique_labels].astype(np.uint8), interpolation='nearest')
+        FULL_COLOR_MAP[unique_labels].astype(np.uint8), interpolation='nearest')
     ax.yaxis.tick_right()
     plt.yticks(range(len(unique_labels)), LABEL_NAMES[unique_labels])
     plt.xticks([], [])
@@ -175,8 +175,7 @@ def vis_segmentation(image, seg_map,save_loc):
     plt.savefig(save_loc, bbox_inches='tight')
 
 
-def get_pascal_feature_map(image_path,save_path):
-
+def get_pascal_feature_map(image_path, save_path):
     in_size = (480, 480)
     image = mpimg.imread(image_path)
     image = resize(image, in_size)
@@ -185,12 +184,11 @@ def get_pascal_feature_map(image_path,save_path):
     semantic_seg = net(img)
     output = tf.argmax(semantic_seg, 3)
     save_loc = os.path.join(save_path, Path(image_path).name)
-    vis_segmentation(image,output[0],save_loc)
+    vis_segmentation(image, output[0], save_loc)
     return output[0]
 
 
 def get_pascal_feature_index(output_map):
-
     indexer = np.zeros(23)
     unique, counts = np.unique(output_map, return_counts=True)
     counts = np.asarray([unique, counts]).T
@@ -206,7 +204,7 @@ def get_pascal_feature_index(output_map):
     return indexer
 
 
-def get_pascal_most_prominent_features(indexer,image_name):
+def get_pascal_most_prominent_features(indexer, image_name):
     area = 480 * 480
 
     test = indexer[21]
@@ -215,23 +213,20 @@ def get_pascal_most_prominent_features(indexer,image_name):
     area_1 = indexer[index_21]
     area_2 = indexer[index_22]
 
-    ratio_number_1 = round((area_1/area) * 100)
+    ratio_number_1 = round((area_1 / area) * 100)
 
-    ratio_number_2 = round((area_2/area) * 100)
+    ratio_number_2 = round((area_2 / area) * 100)
 
-    text = 'About {}% of {} likely contains {}'.format(ratio_number_1,image_name,LABEL_NAMES[index_21])
+    text = 'About {}% of {} likely contains {}'.format(ratio_number_1, image_name, LABEL_NAMES[index_21])
     if indexer[22] != 0:
         text = 'About {}% and {}% of {} likely contains  {} and {} respectively'.format(ratio_number_1,
-                ratio_number_2,image_name, LABEL_NAMES[index_21], LABEL_NAMES[index_22])
+                                                                                        ratio_number_2, image_name,
+                                                                                        LABEL_NAMES[index_21],
+                                                                                        LABEL_NAMES[index_22])
     return text
-
-
-
 
 
 def get_similarity(descriptor1, descriptor2):
     cos_sim = np.dot(descriptor1, descriptor2) / \
               (norm(descriptor1) * norm(descriptor2))
     return cos_sim
-
-
