@@ -1261,8 +1261,8 @@ def similarities(file_name, image_path, dataset, weights):
         'rbsd': sim_rbsd[:50],
         'segmentation': sim_segmentation[:50],
         'local': sim_local[:50],
-        'features': ['Combined', 'Color', 'Region', 'Background / Foreground', 'Keypoints'],
-        'endpoints': ['cld', 'rbsd', 'segmentation', 'local']
+        'features': ['Combined', 'Color', 'Region', 'Background / Foreground', 'Semantic', 'Keypoints'],
+        'endpoints': ['cld', 'rbsd', 'segmentation', 'resnet', 'local']
     })
     return response
 
