@@ -147,26 +147,26 @@ def vis_segmentation(image, seg_map, save_loc):
     grid_spec = gridspec.GridSpec(1, 4, width_ratios=[6, 6, 6, 1])
 
     plt.subplot(grid_spec[0])
-    plt.imshow(image)
+    # plt.imshow(image)
     plt.axis('off')
     plt.title('input image')
 
     plt.subplot(grid_spec[1])
     seg_image = label_to_color_image(seg_map).astype(np.uint8)
-    plt.imshow(seg_image)
+    # plt.imshow(seg_image)
     plt.axis('off')
     plt.title('segmentation map')
 
     plt.subplot(grid_spec[2])
-    plt.imshow(image)
-    plt.imshow(seg_image, alpha=0.7)
+    # plt.imshow(image)
+    # plt.imshow(seg_image, alpha=0.7)
     plt.axis('off')
     plt.title('segmentation overlay')
 
     unique_labels = np.unique(seg_map)
     ax = plt.subplot(grid_spec[3])
-    plt.imshow(
-        FULL_COLOR_MAP[unique_labels].astype(np.uint8), interpolation='nearest')
+    # plt.imshow(
+    #     FULL_COLOR_MAP[unique_labels].astype(np.uint8), interpolation='nearest')
     ax.yaxis.tick_right()
     plt.yticks(range(len(unique_labels)), LABEL_NAMES[unique_labels])
     plt.xticks([], [])
