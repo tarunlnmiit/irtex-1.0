@@ -13,6 +13,8 @@ import matplotlib.image as mpimg
 from tf2cv.model_provider import get_model as tf2cv_get_model
 from numpy.linalg import norm
 
+plt.switch_backend('Agg')
+
 
 def label_to_color_image(label):
     """Adds color defined by the dataset colormap to the label.
@@ -100,8 +102,10 @@ def get_pascal_explanation(query_path, result_path, save_path):
     text2 = get_pascal_most_prominent_features(result_index, 'Result Image')
     explanation['text'] = [text1, text2]
 
-    explanation['images'] = [{'name': 'Query Image', 'url': Path(query_path).name}, {'name': 'Result Image',
-                                                                                     'url': Path(result_path).name}]
+    # explanation['images'] = [{'name': 'Query Image', 'url': Path(query_path).name}, {'name': 'Result Image',
+    #                                                                                  'url': Path(result_path).name}]
+    explanation['images'] = [{'name': 'Query Image', 'url': '/media/cnn/{}'.format(Path(query_path).name)},
+                             {'name': 'Result Image', 'url': '/media/cnn/{}'.format(Path(result_path).name)}]
     return explanation
 
 
@@ -120,8 +124,11 @@ def get_cifar_explanation(query_path, result_path, save_path):
     text = 'The distribution of features present in the query and result are similar by {}%'.format(round(sim * 100))
     explanation['text'] = [text]
 
-    explanation['images'] = [{'name': 'Query Image', 'url': Path(query_path).name}, {'name': 'Result Image',
-                                                                                     'url': Path(result_path).name}]
+    # explanation['images'] = [{'name': 'Query Image', 'url': Path(query_path).name}, {'name': 'Result Image',
+    #                                                                                  'url': Path(result_path).name}]
+
+    explanation['images'] = [{'name': 'Query Image', 'url': '/media/cnn/{}'.format(Path(query_path).name)},
+                             {'name': 'Result Image', 'url': '/media/cnn/{}'.format(Path(result_path).name)}]
     return explanation
 
 
