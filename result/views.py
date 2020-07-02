@@ -737,28 +737,47 @@ def randomQueries(request):
                 'error': 'Dataset value incorrect'
             })
         else:
-            media_path = os.path.join(settings.BASE_DIR, 'media')
             if dataset == 'cifar':
-                path = os.path.join(media_path, 'cifar10')
-                media_val = 'cifar10'
-                num_random = 2
-            if dataset == 'pascal':
-                path = os.path.join(media_path, 'voc')
-                media_val = 'voc'
-                num_random = 1
+                infile = open('cifar_subset_mapping', 'rb')
+                mapping = pickle.load(infile)
+                infile.close()
+                response = []
+                for k, v in mapping.items():
+                    items = random.sample(v, 2)
+                    for item in items:
+                        response.append({'name': item, 'url': '/media/cifar10/{}/{}'.format(k, item)})
+            elif dataset == 'pascal':
+                infile = open('pascal_subset_mapping', 'rb')
+                mapping = pickle.load(infile)
+                infile.close()
+                response = []
+                for k, v in mapping.items():
+                    items = random.sample(v, 1)
+                    for item in items:
+                        response.append({'name': item, 'url': '/media/voc/{}/{}'.format(k, item)})
 
-            map = {}
-            labels = os.listdir(path)
-            for label in labels:
-                label_path = os.path.join(path, label)
-                map[label] = random.sample(os.listdir(label_path), num_random)
-                map[label] = ['/media/{}/{}/{}'.format(media_val, label, item) for item in map[label]]
-
-            response = []
-            for k, v in map.items():
-                for item in v:
-                    name = item.split('/')[-1]
-                    response.append({'name': name, 'url': item})
+            # media_path = os.path.join(settings.BASE_DIR, 'media')
+            # if dataset == 'cifar':
+            #     path = os.path.join(media_path, 'cifar10')
+            #     media_val = 'cifar10'
+            #     num_random = 2
+            # if dataset == 'pascal':
+            #     path = os.path.join(media_path, 'voc')
+            #     media_val = 'voc'
+            #     num_random = 1
+            #
+            # map = {}
+            # labels = os.listdir(path)
+            # for label in labels:
+            #     label_path = os.path.join(path, label)
+            #     map[label] = random.sample(os.listdir(label_path), num_random)
+            #     map[label] = ['/media/{}/{}/{}'.format(media_val, label, item) for item in map[label]]
+            #
+            # response = []
+            # for k, v in map.items():
+            #     for item in v:
+            #         name = item.split('/')[-1]
+            #         response.append({'name': name, 'url': item})
         response = JsonResponse(response, safe=False)
     except Exception as e:
         print(traceback.print_exc())
@@ -1092,10 +1111,10 @@ def similarities(file_name, image_path, dataset, weights):
     #     file_name = '_'.join(file_name.split('_')[:2]) + '.png'
     # Resnet
     if dataset == 'cifar':
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/cifar_resnet_logits.pkl'))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/cifar_resnet_logits_subset.pkl'))
         descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
     elif dataset == 'pascal':
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/pascal.pkl'))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/pascal_subset.pkl'))
         descriptor = df.loc[df['file_name'] == file_name].iloc[0, 2].reshape(1, -1)
         # descriptor = extract_feature_deeplab(image_path)
 
@@ -1103,7 +1122,7 @@ def similarities(file_name, image_path, dataset, weights):
     sim_resnet.sort(key=lambda x: x['similarity'], reverse=True)
     sim_resnet = [item for item in sim_resnet if item['name'] != file_name]
 
-    final_result_images = [item['name'] for item in sim_resnet[:200]]
+    final_result_images = [item['name'] for item in sim_resnet[:50]]
 
     # RBSD
     rbsd = RBSDescriptor(dataset)
@@ -1111,9 +1130,9 @@ def similarities(file_name, image_path, dataset, weights):
     # img_array = rbsd.image_preprocessing(img_array)
     # q_moment = rbsd.zernike_moments(img_array)
     if dataset == 'cifar':
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_cifar_pca.pkl'))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_cifar_pca_subset.pkl'))
     if dataset == 'pascal':
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_pascal_pca_updated.pkl'))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_pascal_pca_updated_subset.pkl'))
     descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
     sim_rbsd = rbsd.similarity_algorithm2(final_result_images, descriptor)
     sim_rbsd.sort(key=lambda x: x['similarity'], reverse=True)
@@ -1125,9 +1144,9 @@ def similarities(file_name, image_path, dataset, weights):
     # descriptor = cld.compute(img_array).reshape(1, -1)
 
     if dataset == 'cifar':
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld.pkl'))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_subset.pkl'))
     if dataset == 'pascal':
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_full_pascal.pkl'))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_full_pascal_subset.pkl'))
     descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
 
     sim_cld = get_similarity_cld_algorithm2(descriptor, dataset, final_result_images)
@@ -1139,13 +1158,13 @@ def similarities(file_name, image_path, dataset, weights):
         # img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         # img = cv2.resize(img, (128, 128), interpolation=cv2.INTER_AREA)
         # segmented_query_img = segmentation_cifar(img)
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('cifar_segment_all')))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}_subset.pkl'.format('cifar_segment_all')))
         segmented_query_img = df.loc[df['file_name'] == file_name].iloc[0, 1]
         sim_segmentation = get_similarity_segmentation_cifar_algorithm2(segmented_query_img, final_result_images)
     elif dataset == 'pascal':
         # img = image.imread(image_path)
         # segmented_query_img_pca = extract_features_pascal(img)
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('pascal_segment_all')))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}_subset.pkl'.format('pascal_segment_all')))
         segmented_query_img_pca = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
         sim_segmentation = get_similarity_segmentation_pascal_algorithm2(segmented_query_img_pca, final_result_images)
 
@@ -1158,7 +1177,7 @@ def similarities(file_name, image_path, dataset, weights):
         # sift = SIFT()
         # img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         # descriptor = sift.compute(img_array, 16, None).reshape(1, -1)
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/sift_pickle/sift_final.pkl'))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/sift_pickle/sift_final_subset.pkl'))
         descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
 
         sim_local = get_similarity_sift_algorithm2(descriptor, final_result_images)
@@ -1168,7 +1187,7 @@ def similarities(file_name, image_path, dataset, weights):
         # orb = ORB()
         # img_array = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         # descriptor = orb.compute(img_array, 16, 8).reshape(1, -1)
-        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/orb_pickle/orb_final_pascal.pkl'))
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/orb_pickle/orb_final_pascal_subset.pkl'))
         descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
 
         sim_local = get_similarity_orb_algorithm2(descriptor, final_result_images)
@@ -1237,11 +1256,11 @@ def similarities(file_name, image_path, dataset, weights):
     combined = [item for item in combined if item['name'] != file_name]
 
     response = JsonResponse({
-        'result': combined[:200],
-        'cld': sim_cld[:200],
-        'rbsd': sim_rbsd[:200],
-        'segmentation': sim_segmentation[:200],
-        'local': sim_local[:200],
+        'result': combined[:50],
+        'cld': sim_cld[:50],
+        'rbsd': sim_rbsd[:50],
+        'segmentation': sim_segmentation[:50],
+        'local': sim_local[:50],
         'features': ['Combined', 'Color', 'Region', 'Background / Foreground', 'Keypoints'],
         'endpoints': ['cld', 'rbsd', 'segmentation', 'local']
     })
@@ -1276,54 +1295,54 @@ def getGlobalTextExplanations(request):
 
             # Resnet
             if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/cifar_resnet_logits.pkl'))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/cifar_resnet_logits_subset.pkl'))
                 descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
             elif dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/pascal.pkl'))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/pascal_subset.pkl'))
                 descriptor = df.loc[df['file_name'] == file_name].iloc[0, 2].reshape(1, -1)
 
             sim_resnet = get_similarity_resnet(descriptor, dataset)
             sim_resnet.sort(key=lambda x: x['similarity'], reverse=True)
             sim_resnet = [item for item in sim_resnet if item['name'] != file_name]
 
-            final_result_images = [item['name'] for item in sim_resnet[:200]]
+            final_result_images = [item['name'] for item in sim_resnet[:50]]
 
             # RBSD
             rbsd = RBSDescriptor(dataset)
             if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_cifar_pca.pkl'))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_cifar_pca_subset.pkl'))
             if dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_pascal_pca_updated.pkl'))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_pascal_pca_updated_subset.pkl'))
             descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
             sim_rbsd_tree = rbsd.similarity(descriptor)
 
             # CLD
             if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld.pkl'))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_subset.pkl'))
             if dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_full_pascal.pkl'))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_full_pascal_subset.pkl'))
             descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
 
             sim_cld_tree = get_similarity_cld(descriptor, dataset)
 
             # Segmentation
             if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('cifar_segment_all')))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}_subset.pkl'.format('cifar_segment_all')))
                 segmented_query_img = df.loc[df['file_name'] == file_name].iloc[0, 1]
                 sim_segmentation_tree = get_similarity_segmentation_cifar(segmented_query_img)
             elif dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('pascal_segment_all')))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}_subset.pkl'.format('pascal_segment_all')))
                 segmented_query_img_pca = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
                 sim_segmentation_tree = get_similarity_segmentation_pascal(segmented_query_img_pca)
 
             # Local
             if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/sift_pickle/sift_final.pkl'))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/sift_pickle/sift_final_subset.pkl'))
                 descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
 
                 sim_local_tree = get_similarity_sift(descriptor)
             elif dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/orb_pickle/orb_final_pascal.pkl'))
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/orb_pickle/orb_final_pascal_subset.pkl'))
                 descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
 
                 sim_local_tree = get_similarity_orb(descriptor)
