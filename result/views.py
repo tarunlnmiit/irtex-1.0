@@ -1243,7 +1243,7 @@ def similarities(file_name, image_path, dataset, weights):
         'segmentation': sim_segmentation[:200],
         'local': sim_local[:200],
         'features': ['Combined', 'Color', 'Region', 'Background / Foreground', 'Keypoints'],
-        'endpoints': ['cld', 'rbsd', 'segmentation', 'local']
+        'endpoints': ['cld', 'rbsd', 'segmentation', 'local', 'resnet']
     })
     return response
 
