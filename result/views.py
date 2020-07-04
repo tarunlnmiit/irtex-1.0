@@ -1261,8 +1261,8 @@ def similarities(file_name, image_path, dataset, weights):
         'rbsd': sim_rbsd[:50],
         'segmentation': sim_segmentation[:50],
         'local': sim_local[:50],
-        'features': ['Combined', 'Color', 'Region', 'Background / Foreground', 'Semantic', 'Keypoints'],
-        'endpoints': ['cld', 'rbsd', 'segmentation', 'resnet', 'local']
+        'features': ['Combined', 'Color', 'Region', 'Background / Foreground', 'Keypoints'],
+        'endpoints': ['cld', 'rbsd', 'segmentation', 'local', 'resnet']
     })
     return response
 
@@ -1508,7 +1508,7 @@ def generateRulesAlgo1(result):
         else:
             rule_d[feature] = min(rule_d[feature], per)
     ex = 'The results are at least similar to the query '
-    feature_map = {'cld': 'color', 'rbsd': 'shape', 'seg': 'background / foreground', 'resnet': 'semantic',
+    feature_map = {'cld': 'color', 'rbsd': 'region', 'seg': 'background / foreground', 'resnet': 'semantic',
                    'local': 'keypoints'}
     for k, v in rule_d.items():
         v = np.round(v, 3)
@@ -1589,7 +1589,7 @@ def generateRulesAlgo2(result, images):
         else:
             rule_d[feature] = min(rule_d[feature], per)
     ex = 'The results are at least similar to the query '
-    feature_map = {'cld': 'color', 'rbsd': 'shape', 'seg': 'background / foreground', 'resnet': 'semantic',
+    feature_map = {'cld': 'color', 'rbsd': 'region', 'seg': 'background / foreground', 'resnet': 'semantic',
                    'local': 'keypoints'}
     for k, v in rule_d.items():
         v = np.round(v, 3)
