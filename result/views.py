@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
+from sklearn.metrics.pairwise import cosine_similarity
 
 from upload.models import QueryImage, QueryImageSimilarity, Session
 from upload.serializers import QueryImageSerializer
@@ -432,7 +433,15 @@ def getLocalTextExplanations(request):
         random_string = randomString(8)
         match_image_path = os.path.join(media_path, 'local/{}.jpg'.format(random_string))
 
+        query_file_name = query_image_path.split('/')[-1]
+        result_file_name = result_image_path.split('/')[-1]
+
         if dataset == 'cifar':
+            df = pd.read_pickle(
+                os.path.join(settings.BASE_DIR, 'local_feature_descriptor/sift_pickle/sift_final.pkl'))
+            query_descriptor = df.loc[df['file_name'] == query_file_name].iloc[0, 1].reshape(1, -1)
+            result_descriptor = df.loc[df['file_name'] == result_file_name].iloc[0, 1].reshape(1, -1)
+
             sift = cv2.xfeatures2d.SIFT_create()
 
             train_keypoints, train_descriptor = sift.detectAndCompute(query_image, None)
@@ -452,6 +461,11 @@ def getLocalTextExplanations(request):
 
             cv2.imwrite(match_image_path, result)
         elif dataset == 'pascal':
+            df = pd.read_pickle(
+                os.path.join(settings.BASE_DIR, 'local_feature_descriptor/orb_pickle/orb_final_pascal.pkl'))
+            query_descriptor = df.loc[df['file_name'] == query_file_name].iloc[0, 1].reshape(1, -1)
+            result_descriptor = df.loc[df['file_name'] == result_file_name].iloc[0, 1].reshape(1, -1)
+
             orb = cv2.ORB_create()
 
             train_keypoints, train_descriptor = orb.detectAndCompute(query_image, None)
@@ -471,6 +485,8 @@ def getLocalTextExplanations(request):
 
             cv2.imwrite(match_image_path, result)
 
+        sim = cosine_similarity(query_descriptor, result_descriptor)
+
         clicks_obj = [{
             'dataset': dataset,
             'query_url': query_url,
@@ -488,11 +504,12 @@ def getLocalTextExplanations(request):
 
         response = JsonResponse({
             'text': ['Key points are interesting or stand out points in an image like corners, '
-                       'edges that do not vary with change in image scale and rotation. '
-                       'The number of key points detected in query image are {}, '
-                       'the number of key points in this result image are {} '
-                       'and the number of matching key points are {}. '
-                     'The lines on the image show the top 10 matches found.'.format(len(train_keypoints), len(test_keypoints), len(matches))],
+                       'edges that do not vary with change in image scale and rotation. ',
+                       'The number of key points detected in query image are {}. '.format(len(train_keypoints)),
+                       'The number of key points in this result image are {}. '.format(len(test_keypoints)),
+                       'The number of matching key points are {}. '.format(len(matches)),
+                       'The matching keypoints are similar by {}%. '.format(np.round(((sim[0][0] + 1) / 2) * 100.0, 2)),
+                     'The lines on the image show the top 10 matches found.'],
             'images': [{'name': 'local explanation', 'url': '/media/local/{}.jpg'.format(random_string)}]
         })
     except Exception as e:
