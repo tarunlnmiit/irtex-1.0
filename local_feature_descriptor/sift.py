@@ -101,7 +101,7 @@ def get_similarity_sift(query):
 
 def get_similarity_sift_algorithm2(query, images):
     feature__path = os.path.join(settings.BASE_DIR, 'local_feature_descriptor')
-    df = pd.read_pickle(os.path.join(feature__path, 'sift_pickle/sift_final.pkl'))
+    df = pd.read_pickle(os.path.join(feature__path, 'sift_pickle/sift_final_subset.pkl'))
 
     df = df[df['file_name'].isin(images)]
 

@@ -33,13 +33,13 @@ class RBSDescriptor:
         feature_csv_path = os.path.join(settings.BASE_DIR, 'region_based_descriptor')
 
         if self.dataset == 'cifar':
-            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar_pca.pkl'))
+            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar_pca_subset.pkl'))
 
             #To perform PCA on query image
             df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_cifar.pkl'))
             n_comp = 15
         if self.dataset == 'pascal':
-            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal_pca_updated.pkl'))
+            df = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal_pca_updated_subset.pkl'))
 
             # To perform PCA on query image
             df_temp = pd.read_pickle(os.path.join(feature_csv_path, 'moments_pascal_updated.pkl'))

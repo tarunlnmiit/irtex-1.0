@@ -100,7 +100,7 @@ def get_similarity_orb(query):
 
 def get_similarity_orb_algorithm2(query, images):
     feature__path = os.path.join(settings.BASE_DIR, 'local_feature_descriptor')
-    df = pd.read_pickle(os.path.join(feature__path, 'orb_pickle/orb_final_pascal.pkl'))
+    df = pd.read_pickle(os.path.join(feature__path, 'orb_pickle/orb_final_pascal_subset.pkl'))
 
     df = df[df['file_name'].isin(images)]
 

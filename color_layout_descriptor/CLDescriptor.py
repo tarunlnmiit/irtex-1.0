@@ -147,9 +147,9 @@ def get_similarity_cld(query, dataset):
 def get_similarity_cld_algorithm2(query, dataset, images):
     feature__path = os.path.join(settings.BASE_DIR, 'color_layout_descriptor')
     if dataset == 'cifar':
-        df = pd.read_pickle(os.path.join(feature__path, 'cld.pkl'))
+        df = pd.read_pickle(os.path.join(feature__path, 'cld_subset.pkl'))
     if dataset == 'pascal':
-        df = pd.read_pickle(os.path.join(feature__path, 'cld_full_pascal.pkl'))
+        df = pd.read_pickle(os.path.join(feature__path, 'cld_full_pascal_subset.pkl'))
 
     df = df[df['file_name'].isin(images)]
     file_name = df['file_name'].tolist()

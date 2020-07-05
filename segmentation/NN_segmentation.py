@@ -244,7 +244,7 @@ def get_similarity_segmentation_cifar_algorithm2(segmented_query_img, images):
 
     feature__path = os.path.join(settings.BASE_DIR, 'segmentation/')
     # path = 'C:\\Users\\Gurpreet\Desktop\\python\\IRTEX-Segmentation\\irtex-1.0\\segmentation\\segmentation_CNN'
-    df = pd.read_pickle(os.path.join(feature__path, '{}.pkl'.format(code)))
+    df = pd.read_pickle(os.path.join(feature__path, '{}_subset.pkl'.format(code)))
 
     df = df[df['file_name'].isin(images)]
 

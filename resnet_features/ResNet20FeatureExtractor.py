@@ -41,9 +41,9 @@ def extract_feature_resnet(query_image_path):
 def get_similarity_resnet(query, dataset):
     feature_csv_path = os.path.join(settings.BASE_DIR, 'resnet_features')
     if dataset == 'cifar':
-        df = pd.read_pickle(os.path.join(feature_csv_path, 'cifar_resnet_logits.pkl'))
+        df = pd.read_pickle(os.path.join(feature_csv_path, 'cifar_resnet_logits_subset.pkl'))
     if dataset == 'pascal':
-        df = pd.read_pickle(os.path.join(feature_csv_path, 'pascal.pkl'))
+        df = pd.read_pickle(os.path.join(feature_csv_path, 'pascal_subset.pkl'))
 
     file_name = df['file_name']
     features = df['resnet'].tolist()
