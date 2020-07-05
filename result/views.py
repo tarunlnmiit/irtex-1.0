@@ -1407,9 +1407,9 @@ def getGlobalTextExplanations(request):
 
             if dataset == 'cifar':
                 freq = {}
-                for item in combined_tree[:200]:
+                for item in sim_resnet[:200]:
                     label = item['label']
-                    #     for label in labels:
+                    label = label.strip()
                     if label not in freq:
                         freq[label] = 1
                     else:
@@ -1425,9 +1425,10 @@ def getGlobalTextExplanations(request):
                 ex = ex[:-2] + ' respectively.'
             elif dataset == 'pascal':
                 freq = {}
-                for item in combined_tree[:200]:
-                    labels = item['label']
+                for item in sim_resnet[:200]:
+                    labels = item['label'].split(',')
                     for label in labels:
+                        label = label.strip()
                         if label not in freq:
                             freq[label] = 1
                         else:
