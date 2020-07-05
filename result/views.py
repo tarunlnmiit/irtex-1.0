@@ -1405,6 +1405,43 @@ def getGlobalTextExplanations(request):
             combined_tree.sort(key=lambda x: x['similarity'], reverse=True)
             combined_tree = [item for item in combined_tree if item['name'] != file_name]
 
+            if dataset == 'cifar':
+                freq = {}
+                for item in combined_tree[:200]:
+                    label = item['label']
+                    #     for label in labels:
+                    if label not in freq:
+                        freq[label] = 1
+                    else:
+                        freq[label] += 1
+                freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
+                # ex = '{}% of all the results retrieved contain {}.'.format(freq[0][1] / 2, freq[0][0])
+                ex = ' The retrieved results consist of '
+                for i in freq[:5]:
+                    ex += '{}, '.format(i[0])
+                ex = ex[:-2] + ' by '
+                for v in freq[:5]:
+                    ex += '{}%, '.format(v[1] / 2)
+                ex = ex[:-2] + ' respectively.'
+            elif dataset == 'pascal':
+                freq = {}
+                for item in combined_tree[:200]:
+                    labels = item['label']
+                    for label in labels:
+                        if label not in freq:
+                            freq[label] = 1
+                        else:
+                            freq[label] += 1
+                freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
+                # ex = '{}% of all the results retrieved contain {}.'.format(freq[0][1] / 2, freq[0][0])
+                ex = ' The retrieved results consist of '
+                for i in freq[:5]:
+                    ex += '{}, '.format(i[0])
+                ex = ex[:-2] + ' by '
+                for v in freq[:5]:
+                    ex += '{}%, '.format(v[1] / 2)
+                ex = ex[:-2] + ' respectively.'
+
             explanation = generateRulesAlgo2(combined_tree, final_result_images)
 
             clicks_obj = [{
@@ -1422,7 +1459,7 @@ def getGlobalTextExplanations(request):
             session.save()
 
             response = JsonResponse({
-                'explanation': explanation
+                'explanation': explanation + ex
             })
     except Exception as e:
         print(traceback.print_exc())
