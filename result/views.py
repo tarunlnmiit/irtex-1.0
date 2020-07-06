@@ -1322,7 +1322,7 @@ def getGlobalTextExplanations(request):
             sim_resnet.sort(key=lambda x: x['similarity'], reverse=True)
             sim_resnet = [item for item in sim_resnet if item['name'] != file_name]
 
-            final_result_images = [item['name'] for item in sim_resnet[:50]]
+            final_result_images = [item['name'] for item in sim_resnet[:200]]
 
             # RBSD
             rbsd = RBSDescriptor(dataset)
@@ -1426,9 +1426,9 @@ def getGlobalTextExplanations(request):
 
             if dataset == 'cifar':
                 freq = {}
-                for item in combined_tree[:50]:
+                for item in sim_resnet[:50]:
                     label = item['label']
-                    #     for label in labels:
+                    label = label.strip()
                     if label not in freq:
                         freq[label] = 1
                     else:
@@ -1444,9 +1444,10 @@ def getGlobalTextExplanations(request):
                 ex = ex[:-2] + ' respectively.'
             elif dataset == 'pascal':
                 freq = {}
-                for item in combined_tree[:50]:
-                    labels = item['label']
+                for item in sim_resnet[:50]:
+                    labels = item['label'].split(',')
                     for label in labels:
+                        label = label.strip()
                         if label not in freq:
                             freq[label] = 1
                         else:
