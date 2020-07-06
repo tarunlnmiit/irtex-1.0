@@ -1662,3 +1662,264 @@ def storeCompareUserClicks(request):
         })
     finally:
         return response
+
+
+def getBaselineResults(request):
+    try:
+        dataset = request.GET.get('dataset', None)
+        query_url = request.GET.get('query_url', None)
+        session_id = request.GET.get('session_id', None)
+        if dataset is None:
+            response = JsonResponse({
+                'error': 'Dataset not selected'
+            })
+        elif dataset not in ['cifar', 'pascal']:
+            response = JsonResponse({
+                'error': 'Dataset value incorrect'
+            })
+        elif query_url is None or session_id is None:
+            response = JsonResponse({
+                'error': 'Parameters not received'
+            })
+        else:
+            query_url = '/'.join(query_url.split('/')[1:])
+            image_path = os.path.join(settings.BASE_DIR, query_url)
+
+            response = baselineSimilarities(query_url.split('/')[-1], image_path, dataset)
+
+            clicks_obj = [{
+                'dataset': dataset,
+                'query_url': query_url,
+                'timestamp': datetime.now(),
+                'click': 'clicked on baseline retrieval'
+            }]
+
+            session = Session.objects.get(_id=session_id)
+            if 'baseline' in session.clicks:
+                session.clicks['baseline'].append(clicks_obj[0])
+            else:
+                session.clicks['baseline'] = clicks_obj
+            session.save()
+    except Exception as e:
+        print(traceback.print_exc())
+        response = JsonResponse({
+            'error': str(traceback.print_exc())
+        })
+    finally:
+        return response
+
+
+def baselineSimilarities(file_name, image_path, dataset):
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/cifar_resnet_logits.pkl'))
+        semantic = df.loc[df['file_name'] == file_name].iloc[0, 1]
+    elif dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/pascal.pkl'))
+        semantic = df.loc[df['file_name'] == file_name].iloc[0, 2]
+        semantic = semantic[1:-2]
+
+    # RBSD
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_cifar_pca.pkl'))
+    if dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_pascal_pca_updated.pkl'))
+    rbsd = df.loc[df['file_name'] == file_name].iloc[0, 1]
+
+    # CLD
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld.pkl'))
+    if dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_full_pascal.pkl'))
+    cld = df.loc[df['file_name'] == file_name].iloc[0, 1]
+
+    # Segmentation
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('cifar_segment_all')))
+        seg = df.loc[df['file_name'] == file_name].iloc[0, 1]
+    elif dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('pascal_segment_all')))
+        seg = df.loc[df['file_name'] == file_name].iloc[0, 1]
+
+    # Local
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/sift_pickle/sift_final.pkl'))
+        local = df.loc[df['file_name'] == file_name].iloc[0, 1]
+    elif dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/orb_pickle/orb_final_pascal.pkl'))
+        local = df.loc[df['file_name'] == file_name].iloc[0, 1]
+
+    combined = np.append(cld, rbsd)
+    combined = np.append(combined, seg)
+    combined = np.append(combined, semantic)
+    combined = np.append(combined, local)
+
+    result = getConcatSimilarity(combined.reshape(1, -1), dataset)
+
+    response = JsonResponse({
+        'result': result[:200],
+        'cld': result[:200],
+        'rbsd': result[:200],
+        'segmentation': result[:200],
+        'local': result[:200],
+        'features': ['Combined', 'Color', 'Region', 'Background / Foreground', 'Keypoints'],
+        'endpoints': ['cld', 'rbsd', 'segmentation', 'local', 'resnet']
+    })
+    return response
+
+
+def getConcatSimilarity(query, dataset):
+    if dataset == 'cifar':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'concat_cifar.pkl'))
+    if dataset == 'pascal':
+        df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'concat_pascal.pkl'))
+
+    file_name = df['file_name']
+    descriptor = df['descriptor'].tolist()
+    labels = df['label']
+
+    q_sim = cosine_similarity(descriptor, query)
+    q_sim = [[(sim[0] + 1) / 2] for sim in q_sim]
+
+    if dataset == 'cifar':
+        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
+                      'url': '/media/cifar10/{}/{}'.format(labels[i], file_name[i])} for i in range(len(q_sim))]
+    if dataset == 'pascal':
+        json_qsim = [{'name': file_name[i], 'similarity': q_sim[i], 'label': labels[i],
+                      'url': '/media/voc/{}/{}'.format(labels[i][0], file_name[i])} for i in range(len(q_sim))]
+
+    return json_qsim
+
+
+def getBaselineGlobalTextExplanations(request):
+    try:
+        dataset = request.GET.get('dataset', None)
+        query_url = request.GET.get('query_url', None)
+        session_id = request.GET.get('session_id', None)
+
+        if dataset is None:
+            response = JsonResponse({
+                'error': 'Dataset not selected'
+            })
+        elif dataset not in ['cifar', 'pascal']:
+            response = JsonResponse({
+                'error': 'Dataset value incorrect'
+            })
+        elif query_url is None or session_id is None:
+            response = JsonResponse({
+                'error': 'Incorrect Parameters'
+            })
+        else:
+            file_name = query_url.split('/')[-1]
+
+            if dataset == 'cifar':
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/cifar_resnet_logits.pkl'))
+                semantic = df.loc[df['file_name'] == file_name].iloc[0, 1]
+            elif dataset == 'pascal':
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/pascal.pkl'))
+                semantic = df.loc[df['file_name'] == file_name].iloc[0, 2]
+                semantic = semantic[1:-2]
+
+            # RBSD
+            if dataset == 'cifar':
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_cifar_pca.pkl'))
+            if dataset == 'pascal':
+                df = pd.read_pickle(
+                    os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_pascal_pca_updated.pkl'))
+            rbsd = df.loc[df['file_name'] == file_name].iloc[0, 1]
+
+            # CLD
+            if dataset == 'cifar':
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld.pkl'))
+            if dataset == 'pascal':
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_full_pascal.pkl'))
+            cld = df.loc[df['file_name'] == file_name].iloc[0, 1]
+
+            # Segmentation
+            if dataset == 'cifar':
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('cifar_segment_all')))
+                seg = df.loc[df['file_name'] == file_name].iloc[0, 1]
+            elif dataset == 'pascal':
+                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('pascal_segment_all')))
+                seg = df.loc[df['file_name'] == file_name].iloc[0, 1]
+
+            # Local
+            if dataset == 'cifar':
+                df = pd.read_pickle(
+                    os.path.join(settings.BASE_DIR, 'local_feature_descriptor/sift_pickle/sift_final.pkl'))
+                local = df.loc[df['file_name'] == file_name].iloc[0, 1]
+            elif dataset == 'pascal':
+                df = pd.read_pickle(
+                    os.path.join(settings.BASE_DIR, 'local_feature_descriptor/orb_pickle/orb_final_pascal.pkl'))
+                local = df.loc[df['file_name'] == file_name].iloc[0, 1]
+
+            combined = np.append(cld, rbsd)
+            combined = np.append(combined, seg)
+            combined = np.append(combined, semantic)
+            combined = np.append(combined, local)
+
+            result = getConcatSimilarity(combined.reshape(1, -1), dataset)
+
+            if dataset == 'cifar':
+                freq = {}
+                for item in result[:200]:
+                    label = item['label']
+                    label = label.strip()
+                    if label not in freq:
+                        freq[label] = 1
+                    else:
+                        freq[label] += 1
+                freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
+                # ex = '{}% of all the results retrieved contain {}.'.format(freq[0][1] / 2, freq[0][0])
+                ex = ' The retrieved results consist of '
+                for i in freq[:5]:
+                    ex += '{}, '.format(i[0])
+                ex = ex[:-2] + ' by '
+                for v in freq[:5]:
+                    ex += '{}%, '.format(v[1] / 2)
+                ex = ex[:-2] + ' respectively.'
+            elif dataset == 'pascal':
+                freq = {}
+                for item in result[:200]:
+                    labels = item['label']
+                    for label in labels:
+                        label = label.strip()
+                        if label not in freq:
+                            freq[label] = 1
+                        else:
+                            freq[label] += 1
+                freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
+                # ex = '{}% of all the results retrieved contain {}.'.format(freq[0][1] / 2, freq[0][0])
+                ex = ' The retrieved results consist of '
+                for i in freq[:5]:
+                    ex += '{}, '.format(i[0])
+                ex = ex[:-2] + ' by '
+                for v in freq[:5]:
+                    ex += '{}%, '.format(v[1] / 2)
+                ex = ex[:-2] + ' respectively.'
+
+            # explanation = generateRulesAlgo2(result, [item['name'] for item in result[:200]])
+
+            clicks_obj = [{
+                'dataset': dataset,
+                'query_url': query_url,
+                'timestamp': datetime.now(),
+                'click': 'clicked on global baseline explanations'
+            }]
+
+            session = Session.objects.get(_id=session_id)
+            if 'global_baseline' in session.clicks:
+                session.clicks['global_baseline'].append(clicks_obj[0])
+            else:
+                session.clicks['global_baseline'] = clicks_obj
+            session.save()
+
+            response = JsonResponse({
+                'explanation': ex
+            })
+    except Exception as e:
+        print(traceback.print_exc())
+        response = JsonResponse({
+            'error': str(traceback.print_exc())
+        })
+    finally:
+        return response

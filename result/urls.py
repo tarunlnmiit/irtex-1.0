@@ -13,10 +13,12 @@ urlpatterns = [
     path('explain/segmentation/', views.getSegTextExplanations),
     path('explain/resnet/', views.getResnetTextExplanations),
     path('explain/global/', views.getGlobalTextExplanations),
+    path('explain/baseline/global/', views.getBaselineGlobalTextExplanations),
     path('queries', views.randomQueries),
     path('algo2/<str:_id>', views.getCombinedResultsAlgorithm2),
     path('algo2/<str:_id>', views.getCombinedResultsAlgorithm2),
     path('url', views.getResults),
+    path('baseline', views.getBaselineResults),
     path('compare', views.storeCompareUserClicks),
     path('<str:_id>', views.getCombinedResults),
 ]
