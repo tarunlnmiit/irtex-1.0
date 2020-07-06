@@ -147,7 +147,6 @@ class RBSDescriptor:
         score = q_sim[0]
         score = score[0] * 100
         score = round(score, 2)
-        text = 'Below regions were compared to get the similarity score. The similarity between these two region is ' + str(score) + '%'
 
         # textual = []
         # textual.append(text)
@@ -157,7 +156,8 @@ class RBSDescriptor:
         # visual.append('query_rbsd.png')
 
         explanation = {}
-        explanation['text'] = [text]
+        explanation['text'] = ['The images points out the region of interest which was considered to find similarity.',
+                               'The similarity between these two region is ' + str(score) + '%']
 
         explanation['images'] = [{'name': 'Query Image', 'url': '/media/rbsd/{}_rbsd.png'.format(query_image_name.split('.')[0])},
                              {'name': 'Result Image',
