@@ -127,8 +127,9 @@ def get_cifar_explanation(query_path, result_path, save_path):
     # explanation['images'] = [{'name': 'Query Image', 'url': Path(query_path).name}, {'name': 'Result Image',
     #                                                                                  'url': Path(result_path).name}]
 
-    explanation['images'] = [{'name': 'Query Image', 'url': '/media/cnn/{}'.format(Path(query_path).name)},
-                             {'name': 'Result Image', 'url': '/media/cnn/{}'.format(Path(result_path).name)}]
+    # explanation['images'] = [{'name': 'Query Image', 'url': '/media/cnn/{}'.format(Path(query_path).name)},
+    #                          {'name': 'Result Image', 'url': '/media/cnn/{}'.format(Path(result_path).name)}]
+    explanation['images'] = []
     return explanation
 
 
