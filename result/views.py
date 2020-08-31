@@ -132,7 +132,12 @@ def getResults(request):
             query_url = '/'.join(query_url.split('/')[1:])
             image_path = os.path.join(settings.BASE_DIR, query_url)
 
-            response = similarities(query_url.split('/')[-1], image_path, dataset, weights)
+            json_name = query_url.split('/')[-1].split('.')[0]
+            filename = os.path.join(settings.BASE_DIR, 'result/json_results/{}/{}.json'.format(dataset, json_name))
+            with open(filename, 'rb') as file:
+                response = JsonResponse(json.loads(file.read()))
+
+            # response = similarities(query_url.split('/')[-1], image_path, dataset, weights)
 
             clicks_obj = [{
                 'dataset': dataset,
@@ -1291,177 +1296,182 @@ def getGlobalTextExplanations(request):
 
             file_name = query_url.split('/')[-1]
 
-            # Resnet
-            if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/cifar_resnet_logits.pkl'))
-                descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
-            elif dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/pascal.pkl'))
-                descriptor = df.loc[df['file_name'] == file_name].iloc[0, 2].reshape(1, -1)
+            txt = query_url.split('/')[-1].split('.')[0]
+            filename = os.path.join(settings.BASE_DIR, 'result/json_results_complete/{}/{}.txt'.format(dataset, txt))
+            with open(filename, 'rb') as file:
+                response = JsonResponse(json.loads(file.read()))
 
-            sim_resnet = get_similarity_resnet(descriptor, dataset)
-            sim_resnet.sort(key=lambda x: x['similarity'], reverse=True)
-            sim_resnet = [item for item in sim_resnet if item['name'] != file_name]
-
-            final_result_images = [item['name'] for item in sim_resnet[:200]]
-
-            # RBSD
-            rbsd = RBSDescriptor(dataset)
-            if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_cifar_pca.pkl'))
-            if dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_pascal_pca_updated.pkl'))
-            descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
-            sim_rbsd_tree = rbsd.similarity(descriptor)
-
-            # CLD
-            if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld.pkl'))
-            if dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_full_pascal.pkl'))
-            descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
-
-            sim_cld_tree = get_similarity_cld(descriptor, dataset)
-
-            # Segmentation
-            if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('cifar_segment_all')))
-                segmented_query_img = df.loc[df['file_name'] == file_name].iloc[0, 1]
-                sim_segmentation_tree = get_similarity_segmentation_cifar(segmented_query_img)
-            elif dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('pascal_segment_all')))
-                segmented_query_img_pca = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
-                sim_segmentation_tree = get_similarity_segmentation_pascal(segmented_query_img_pca)
-
-            # Local
-            if dataset == 'cifar':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/sift_pickle/sift_final.pkl'))
-                descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
-
-                sim_local_tree = get_similarity_sift(descriptor)
-            elif dataset == 'pascal':
-                df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/orb_pickle/orb_final_pascal.pkl'))
-                descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
-
-                sim_local_tree = get_similarity_orb(descriptor)
-
-            combined_tree = {}
-            len_features = 4
-
-            for item in sim_cld_tree:
-                name = item['name']
-                name = item['name']
-                combined_tree[name] = {}
-                combined_tree[name]['name'] = name
-                combined_tree[name]['url'] = item['url']
-                combined_tree[name]['label'] = item['label']
-                combined_tree[name]['similarity_list'] = [0] * len_features
-                combined_tree[name]['similarity_list'][0] = item['similarity']
-
-            for item in sim_rbsd_tree:
-                name = item['name']
-                if name not in combined_tree:
-                    combined_tree[name] = {}
-                    combined_tree[name]['name'] = name
-                    combined_tree[name]['url'] = item['url']
-                    combined_tree[name]['label'] = item['label']
-                    combined_tree[name]['similarity_list'] = [0] * len_features
-                    combined_tree[name]['similarity_list'][1] = item['similarity']
-                else:
-                    combined_tree[name]['similarity_list'][1] = item['similarity']
-
-            for item in sim_segmentation_tree:
-                name = item['name']
-                if name not in combined_tree:
-                    combined_tree[name] = {}
-                    combined_tree[name]['name'] = name
-                    combined_tree[name]['url'] = item['url']
-                    combined_tree[name]['label'] = item['label']
-                    combined_tree[name]['similarity_list'] = [0] * len_features
-                    combined_tree[name]['similarity_list'][2] = item['similarity']
-                else:
-                    combined_tree[name]['similarity_list'][2] = item['similarity']
-
-            for item in sim_local_tree:
-                name = item['name']
-                if name not in combined_tree:
-                    combined_tree[name] = {}
-                    combined_tree[name]['name'] = name
-                    combined_tree[name]['url'] = item['url']
-                    combined_tree[name]['label'] = item['label']
-                    combined_tree[name]['similarity_list'] = [0] * len_features
-                    combined_tree[name]['similarity_list'][3] = item['similarity']
-                else:
-                    combined_tree[name]['similarity_list'][3] = item['similarity']
-
-            for k, v in combined_tree.items():
-                s = 0
-                for i, similarity in enumerate(combined_tree[k]['similarity_list']):
-                    s += (weights[i] * similarity)
-                combined_tree[k]['similarity'] = s / np.sum(weights)
-                combined_tree[k]['similarity_list'] = [combined_tree[k]['similarity']] + combined_tree[k]['similarity_list']
-
-            combined_tree = list(combined_tree.values())
-            combined_tree.sort(key=lambda x: x['similarity'], reverse=True)
-            combined_tree = [item for item in combined_tree if item['name'] != file_name]
-
-            if dataset == 'cifar':
-                freq = {}
-                for item in sim_resnet[:200]:
-                    label = item['label']
-                    label = label.strip()
-                    if label not in freq:
-                        freq[label] = 1
-                    else:
-                        freq[label] += 1
-                freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
-                # ex = '{}% of all the results retrieved contain {}.'.format(freq[0][1] / 2, freq[0][0])
-                ex = ' The retrieved results consist of '
-                for i in freq[:5]:
-                    ex += '{}, '.format(i[0])
-                ex = ex[:-2] + ' by '
-                for v in freq[:5]:
-                    ex += '{}%, '.format(v[1] / 2)
-                ex = ex[:-2] + ' respectively.'
-            elif dataset == 'pascal':
-                freq = {}
-                for item in sim_resnet[:200]:
-                    labels = item['label'].split(',')
-                    for label in labels:
-                        label = label.strip()
-                        if label not in freq:
-                            freq[label] = 1
-                        else:
-                            freq[label] += 1
-                freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
-                # ex = '{}% of all the results retrieved contain {}.'.format(freq[0][1] / 2, freq[0][0])
-                ex = ' The retrieved results consist of '
-                for i in freq[:5]:
-                    ex += '{}, '.format(i[0])
-                ex = ex[:-2] + ' by '
-                for v in freq[:5]:
-                    ex += '{}%, '.format(v[1] / 2)
-                ex = ex[:-2] + ' respectively.'
-
-            explanation = generateRulesAlgo2(combined_tree, final_result_images)
-
-            clicks_obj = [{
-                'dataset': dataset,
-                'query_url': query_url,
-                'timestamp': datetime.now(),
-                'click': 'clicked on global explanations'
-            }]
-
-            session = Session.objects.get(_id=session_id)
-            if 'global' in session.clicks:
-                session.clicks['global'].append(clicks_obj[0])
-            else:
-                session.clicks['global'] = clicks_obj
-            session.save()
-
-            response = JsonResponse({
-                'explanation': explanation + ex
-            })
+            # # Resnet
+            # if dataset == 'cifar':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/cifar_resnet_logits.pkl'))
+            #     descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
+            # elif dataset == 'pascal':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'resnet_features/pascal.pkl'))
+            #     descriptor = df.loc[df['file_name'] == file_name].iloc[0, 2].reshape(1, -1)
+            #
+            # sim_resnet = get_similarity_resnet(descriptor, dataset)
+            # sim_resnet.sort(key=lambda x: x['similarity'], reverse=True)
+            # sim_resnet = [item for item in sim_resnet if item['name'] != file_name]
+            #
+            # final_result_images = [item['name'] for item in sim_resnet[:200]]
+            #
+            # # RBSD
+            # rbsd = RBSDescriptor(dataset)
+            # if dataset == 'cifar':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_cifar_pca.pkl'))
+            # if dataset == 'pascal':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'region_based_descriptor/moments_pascal_pca_updated.pkl'))
+            # descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
+            # sim_rbsd_tree = rbsd.similarity(descriptor)
+            #
+            # # CLD
+            # if dataset == 'cifar':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld.pkl'))
+            # if dataset == 'pascal':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'color_layout_descriptor/cld_full_pascal.pkl'))
+            # descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
+            #
+            # sim_cld_tree = get_similarity_cld(descriptor, dataset)
+            #
+            # # Segmentation
+            # if dataset == 'cifar':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('cifar_segment_all')))
+            #     segmented_query_img = df.loc[df['file_name'] == file_name].iloc[0, 1]
+            #     sim_segmentation_tree = get_similarity_segmentation_cifar(segmented_query_img)
+            # elif dataset == 'pascal':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'segmentation/{}.pkl'.format('pascal_segment_all')))
+            #     segmented_query_img_pca = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
+            #     sim_segmentation_tree = get_similarity_segmentation_pascal(segmented_query_img_pca)
+            #
+            # # Local
+            # if dataset == 'cifar':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/sift_pickle/sift_final.pkl'))
+            #     descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
+            #
+            #     sim_local_tree = get_similarity_sift(descriptor)
+            # elif dataset == 'pascal':
+            #     df = pd.read_pickle(os.path.join(settings.BASE_DIR, 'local_feature_descriptor/orb_pickle/orb_final_pascal.pkl'))
+            #     descriptor = df.loc[df['file_name'] == file_name].iloc[0, 1].reshape(1, -1)
+            #
+            #     sim_local_tree = get_similarity_orb(descriptor)
+            #
+            # combined_tree = {}
+            # len_features = 4
+            #
+            # for item in sim_cld_tree:
+            #     name = item['name']
+            #     name = item['name']
+            #     combined_tree[name] = {}
+            #     combined_tree[name]['name'] = name
+            #     combined_tree[name]['url'] = item['url']
+            #     combined_tree[name]['label'] = item['label']
+            #     combined_tree[name]['similarity_list'] = [0] * len_features
+            #     combined_tree[name]['similarity_list'][0] = item['similarity']
+            #
+            # for item in sim_rbsd_tree:
+            #     name = item['name']
+            #     if name not in combined_tree:
+            #         combined_tree[name] = {}
+            #         combined_tree[name]['name'] = name
+            #         combined_tree[name]['url'] = item['url']
+            #         combined_tree[name]['label'] = item['label']
+            #         combined_tree[name]['similarity_list'] = [0] * len_features
+            #         combined_tree[name]['similarity_list'][1] = item['similarity']
+            #     else:
+            #         combined_tree[name]['similarity_list'][1] = item['similarity']
+            #
+            # for item in sim_segmentation_tree:
+            #     name = item['name']
+            #     if name not in combined_tree:
+            #         combined_tree[name] = {}
+            #         combined_tree[name]['name'] = name
+            #         combined_tree[name]['url'] = item['url']
+            #         combined_tree[name]['label'] = item['label']
+            #         combined_tree[name]['similarity_list'] = [0] * len_features
+            #         combined_tree[name]['similarity_list'][2] = item['similarity']
+            #     else:
+            #         combined_tree[name]['similarity_list'][2] = item['similarity']
+            #
+            # for item in sim_local_tree:
+            #     name = item['name']
+            #     if name not in combined_tree:
+            #         combined_tree[name] = {}
+            #         combined_tree[name]['name'] = name
+            #         combined_tree[name]['url'] = item['url']
+            #         combined_tree[name]['label'] = item['label']
+            #         combined_tree[name]['similarity_list'] = [0] * len_features
+            #         combined_tree[name]['similarity_list'][3] = item['similarity']
+            #     else:
+            #         combined_tree[name]['similarity_list'][3] = item['similarity']
+            #
+            # for k, v in combined_tree.items():
+            #     s = 0
+            #     for i, similarity in enumerate(combined_tree[k]['similarity_list']):
+            #         s += (weights[i] * similarity)
+            #     combined_tree[k]['similarity'] = s / np.sum(weights)
+            #     combined_tree[k]['similarity_list'] = [combined_tree[k]['similarity']] + combined_tree[k]['similarity_list']
+            #
+            # combined_tree = list(combined_tree.values())
+            # combined_tree.sort(key=lambda x: x['similarity'], reverse=True)
+            # combined_tree = [item for item in combined_tree if item['name'] != file_name]
+            #
+            # if dataset == 'cifar':
+            #     freq = {}
+            #     for item in sim_resnet[:200]:
+            #         label = item['label']
+            #         label = label.strip()
+            #         if label not in freq:
+            #             freq[label] = 1
+            #         else:
+            #             freq[label] += 1
+            #     freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
+            #     # ex = '{}% of all the results retrieved contain {}.'.format(freq[0][1] / 2, freq[0][0])
+            #     ex = ' The retrieved results consist of '
+            #     for i in freq[:5]:
+            #         ex += '{}, '.format(i[0])
+            #     ex = ex[:-2] + ' by '
+            #     for v in freq[:5]:
+            #         ex += '{}%, '.format(v[1] / 2)
+            #     ex = ex[:-2] + ' respectively.'
+            # elif dataset == 'pascal':
+            #     freq = {}
+            #     for item in sim_resnet[:200]:
+            #         labels = item['label'].split(',')
+            #         for label in labels:
+            #             label = label.strip()
+            #             if label not in freq:
+            #                 freq[label] = 1
+            #             else:
+            #                 freq[label] += 1
+            #     freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
+            #     # ex = '{}% of all the results retrieved contain {}.'.format(freq[0][1] / 2, freq[0][0])
+            #     ex = ' The retrieved results consist of '
+            #     for i in freq[:5]:
+            #         ex += '{}, '.format(i[0])
+            #     ex = ex[:-2] + ' by '
+            #     for v in freq[:5]:
+            #         ex += '{}%, '.format(v[1] / 2)
+            #     ex = ex[:-2] + ' respectively.'
+            #
+            # explanation = generateRulesAlgo2(combined_tree, final_result_images)
+            #
+            # clicks_obj = [{
+            #     'dataset': dataset,
+            #     'query_url': query_url,
+            #     'timestamp': datetime.now(),
+            #     'click': 'clicked on global explanations'
+            # }]
+            #
+            # session = Session.objects.get(_id=session_id)
+            # if 'global' in session.clicks:
+            #     session.clicks['global'].append(clicks_obj[0])
+            # else:
+            #     session.clicks['global'] = clicks_obj
+            # session.save()
+            #
+            # response = JsonResponse({
+            #     'explanation': explanation + ex
+            # })
     except Exception as e:
         print(traceback.print_exc())
         response = JsonResponse({
@@ -1920,6 +1930,51 @@ def getBaselineGlobalTextExplanations(request):
         print(traceback.print_exc())
         response = JsonResponse({
             'error': str(traceback.print_exc())
+        })
+    finally:
+        return response
+
+
+def userStudyQueries(request):
+    try:
+        dataset = request.GET.get('dataset', None)
+
+        if dataset is None:
+            response = JsonResponse({
+                'error': 'Dataset not selected'
+            })
+        elif dataset not in ['cifar', 'pascal']:
+            response = JsonResponse({
+                'error': 'Dataset value incorrect'
+            })
+        else:
+            media_path = os.path.join(settings.BASE_DIR, 'media/user_study')
+            if dataset == 'cifar':
+                path = os.path.join(media_path, 'cifar10')
+                media_val = 'cifar10'
+                # num_random = 2
+            if dataset == 'pascal':
+                path = os.path.join(media_path, 'voc')
+                media_val = 'voc'
+                # num_random = 1
+
+            map = {}
+            labels = os.listdir(path)
+            for label in labels:
+                label_path = os.path.join(path, label)
+                map[label] = os.listdir(label_path)
+                map[label] = ['/media/user_study/{}/{}/{}'.format(media_val, label, item) for item in map[label]]
+
+            response = []
+            for k, v in map.items():
+                for item in v:
+                    name = item.split('/')[-1]
+                    response.append({'name': name, 'url': item})
+        response = JsonResponse(response, safe=False)
+    except Exception as e:
+        print(traceback.print_exc())
+        response = JsonResponse({
+            'error': traceback.print_exc()
         })
     finally:
         return response
