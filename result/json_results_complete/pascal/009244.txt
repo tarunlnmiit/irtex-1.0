@@ -1,0 +1,1 @@
+{"explanation": "The results are at least similar to the query by 50.0% in background / foreground, by 25.2% in shape, by 85.0% in color. The retrieved results consist of cat, person, bird, dog, sheep by 98.0%, 5.5%, 1.5%, 1.0%, 0.5% respectively."}

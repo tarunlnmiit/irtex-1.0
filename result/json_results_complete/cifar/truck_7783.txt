@@ -1,0 +1,1 @@
+{"explanation": "The results are at least similar to the query by 76.1% in keypoints, by 53.5% in shape, by 89.9% in color. The retrieved results consist of truck, automobile by 96.5%, 3.5% respectively."}

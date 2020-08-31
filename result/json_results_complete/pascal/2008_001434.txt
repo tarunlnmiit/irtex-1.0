@@ -1,0 +1,1 @@
+{"explanation": "The results are at least similar to the query by 82.8% in color, by 60.9% in shape. The retrieved results consist of person, chair, diningtable, bottle, pottedplant by 99.0%, 56.0%, 49.0%, 17.0%, 13.5% respectively."}
